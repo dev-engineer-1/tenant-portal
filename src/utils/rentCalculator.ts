@@ -1,78 +1,64 @@
-// src/utils/rentCalculator.ts
-
-interface LeaseDetails {
+interface RentProrationInput {
   monthlyRent: number;
-  leaseStartDate: Date;
-  leaseEndDate: Date;
-}
-
-interface ProrationDetails {
-  dailyRent: number;
+  daysInMonth: number;
   daysOccupied: number;
 }
 
-interface LateFeeDetails {
-  baseLateFee: number;
+interface LateFeeCalculationInput {
+  rentDueDate: Date;
+  paymentDate: Date;
   dailyLateFee: number;
-  daysLate: number;
 }
 
-interface LeaseBalanceSummary {
-  totalRentPaid: number;
-  totalRentDue: number;
-  outstandingBalance: number;
+interface LeaseBalanceSummaryInput {
+  totalLeaseAmount: number;
+  paymentsMade: number[];
 }
 
-export function calculateProratedRent(leaseDetails: LeaseDetails, prorationDetails: ProrationDetails): number {
-  if (prorationDetails.daysOccupied < 0) {
-    throw new Error("Days occupied cannot be negative.");
+interface CurrencyFormatInput {
+  amount: number;
+  currencyCode: string;
+}
+
+export function calculateRentProration(input: RentProrationInput): number {
+  const { monthlyRent, daysInMonth, daysOccupied } = input;
+
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
+    throw new Error("Invalid input values for rent proration.");
   }
-  if (leaseDetails.monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
+
+  const dailyRent = monthlyRent / daysInMonth;
+  return dailyRent * daysOccupied;
+}
+
+export function calculateLateFee(input: LateFeeCalculationInput): number {
+  const { rentDueDate, paymentDate, dailyLateFee } = input;
+
+  if (dailyLateFee < 0) {
+    throw new Error("Daily late fee must be a non-negative number.");
   }
-  return prorationDetails.dailyRent * prorationDetails.daysOccupied;
+
+  const lateDays = Math.max(0, Math.ceil((paymentDate.getTime() - rentDueDate.getTime()) / (1000 * 60 * 60 * 24)));
+  return lateDays * dailyLateFee;
 }
 
-export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
-  if (lateFeeDetails.daysLate < 0) {
-    throw new Error("Days late cannot be negative.");
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
+  const { totalLeaseAmount, paymentsMade } = input;
+
+  if (totalLeaseAmount < 0 || paymentsMade.some(payment => payment < 0)) {
+    throw new Error("Invalid input values for lease balance summary.");
   }
-  if (lateFeeDetails.baseLateFee < 0 || lateFeeDetails.dailyLateFee < 0) {
-    throw new Error("Late fees must be non-negative.");
-  }
-  return lateFeeDetails.baseLateFee + (lateFeeDetails.dailyLateFee * lateFeeDetails.daysLate);
+
+  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPayments;
 }
 
-export function generateLeaseBalanceSummary(totalRentPaid: number, leaseDetails: LeaseDetails): LeaseBalanceSummary {
-  if (totalRentPaid < 0) {
-    throw new Error("Total rent paid cannot be negative.");
-  }
-  const totalRentDue = calculateTotalRentDue(leaseDetails);
-  const outstandingBalance = totalRentDue - totalRentPaid;
-  return {
-    totalRentPaid,
-    totalRentDue,
-    outstandingBalance
-  };
-}
+export function formatCurrency(input: CurrencyFormatInput): string {
+  const { amount, currencyCode } = input;
 
-function calculateTotalRentDue(leaseDetails: LeaseDetails): number {
-  const months = calculateMonthsBetween(leaseDetails.leaseStartDate, leaseDetails.leaseEndDate);
-  return leaseDetails.monthlyRent * months;
-}
-
-function calculateMonthsBetween(startDate: Date, endDate: Date): number {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  let months = (end.getFullYear() - start.getFullYear()) * 12;
-  months -= start.getMonth();
-  months += end.getMonth();
-  return months <= 0 ? 0 : months;
-}
-
-export function formatCurrency(amount: number): string {
   if (amount < 0) {
-    throw new Error("Amount cannot be negative.");
+    throw new Error("Amount must be a non-negative number.");
   }
-  return `$${amount.toFixed(2)}`;
+
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
