@@ -1,62 +1,64 @@
-# NestIQ: Revolutionizing Property Management with AI
+# NestIQ
 
-NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. By integrating AI-driven solutions, NestIQ enables property managers to efficiently manage three times more properties with the same team.
+**Automate Your Property Management with AI**
+
+---
+
+NestIQ is a B2B SaaS platform designed to revolutionize property management by automating tenant communication, maintenance requests, and rent collection. By leveraging AI, property managers can efficiently manage up to three times more properties without expanding their team.
 
 ## Problem Solved
 
-Managing a large portfolio of properties is challenging, with repetitive tasks consuming valuable time and resources. NestIQ addresses these challenges by automating key operations, allowing property managers to focus on growth and tenant satisfaction.
+Property managers often face the challenge of handling repetitive tasks that consume valuable time and resources. NestIQ addresses this by automating these operations, allowing property managers to focus on growth and tenant satisfaction.
 
 ## Key Features
 
-- **Automated Tenant Communication**: Streamline communication with tenants using AI-powered chatbots and notifications.
-- **Maintenance Request Management**: Simplify the process of handling maintenance requests with an intuitive interface and automated workflows.
-- **Rent Collection Automation**: Facilitate seamless rent collection through integrated payment systems.
-- **Portfolio Integration**: Easily connect and manage your entire property portfolio in one platform.
-- **Scalable Solution**: Designed to grow with your business, supporting property managers with 50+ units.
+- **Automated Tenant Communication**: Streamline tenant interactions with AI-driven messaging.
+- **Maintenance Request Management**: Efficiently handle and track maintenance tasks.
+- **Rent Collection Automation**: Simplify rent payments with integrated Stripe support.
+- **Portfolio Integration**: Seamlessly connect and manage your property portfolio.
+- **Scalable Management**: Manage more properties with the same team size.
 
 ## Tech Stack
 
-- **Backend**: Python, FastAPI
-- **Frontend**: React.js
-- **Database**: PostgreSQL
+- **Backend**: Python
+- **API Framework**: FastAPI
 - **Payment Processing**: Stripe
-- **Hosting**: AWS
+- **Database**: PostgreSQL
+- **AI Services**: OpenAI GPT
 
 ## Getting Started
 
-To get started with NestIQ, follow the steps below:
+To get started with NestIQ, follow these steps:
 
-1. **Clone the Repository**
+1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/nestiq/nestiq.git
+   git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Install Dependencies**
+2. **Set Up the Virtual Environment**:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set Up Environment Variables**
-   Create a `.env` file in the root directory and add your configuration details:
-   ```plaintext
-   STRIPE_API_KEY=<your-stripe-api-key>
-   DATABASE_URL=<your-database-url>
-   ```
-
-4. **Run the Application**
+4. **Run the Backend**:
    ```bash
    uvicorn src.main:app --reload
    ```
 
-5. **Access the Application**
-   Open your browser and navigate to `http://localhost:8000` to access the NestIQ platform.
+5. **Access the API Documentation**:
+   Visit `http://localhost:8000/docs` to explore the API endpoints.
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, leveraging cutting-edge AI technology to transform property management.
+NestIQ is proudly built with [Agentix](https://agentix.ai), empowering developers to create intelligent applications with ease.
 
----
+--- 
 
-For more information, visit our [website](https://nestiq.com) or follow us on [LinkedIn](https://linkedin.com/company/nestiq) and [X](https://x.com/nestiq).
-```
+For inquiries and support, please contact support@nestiq.com. Connect with us on [LinkedIn](https://linkedin.com/company/nestiq) and [X](https://x.com/nestiq) for updates and news.
