@@ -1,83 +1,60 @@
 // src/utils/rentCalculator.ts
 
-interface LeaseDetails {
+interface RentProrationInput {
   monthlyRent: number;
-  leaseStartDate: Date;
-  leaseEndDate: Date;
+  daysInMonth: number;
+  daysOccupied: number;
 }
 
-interface ProrationDetails {
-  moveInDate: Date;
-  monthlyRent: number;
+interface LateFeeCalculationInput {
+  baseRent: number;
+  lateFeePercentage: number;
+  daysLate: number;
+  maxLateFee?: number;
 }
 
-interface LateFeeDetails {
-  dueDate: Date;
-  paymentDate: Date;
-  monthlyRent: number;
-  lateFeeRate: number; // as a percentage, e.g., 5 for 5%
+interface LeaseBalanceSummaryInput {
+  totalLeaseAmount: number;
+  amountPaid: number;
 }
 
-interface LeaseBalanceDetails {
-  monthlyRent: number;
-  paymentsMade: number[];
+interface CurrencyFormatInput {
+  amount: number;
+  currency: string;
+  locale?: string;
 }
 
-export function calculateProratedRent(details: ProrationDetails): number {
-  const { moveInDate, monthlyRent } = details;
-  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
-    throw new Error("Invalid move-in date.");
+export function calculateProratedRent(input: RentProrationInput): number {
+  const { monthlyRent, daysInMonth, daysOccupied } = input;
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
+    throw new Error('Invalid input values for rent proration.');
   }
-  if (monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
-  }
-
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const proratedRent = (monthlyRent / daysInMonth) * (daysInMonth - moveInDate.getDate() + 1);
-  return parseFloat(proratedRent.toFixed(2));
+  return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
-export function calculateLateFee(details: LateFeeDetails): number {
-  const { dueDate, paymentDate, monthlyRent, lateFeeRate } = details;
-  if (!(dueDate instanceof Date) || isNaN(dueDate.getTime())) {
-    throw new Error("Invalid due date.");
+export function calculateLateFee(input: LateFeeCalculationInput): number {
+  const { baseRent, lateFeePercentage, daysLate, maxLateFee } = input;
+  if (baseRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
+    throw new Error('Invalid input values for late fee calculation.');
   }
-  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
-    throw new Error("Invalid payment date.");
-  }
-  if (monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
-  }
-  if (lateFeeRate < 0) {
-    throw new Error("Late fee rate must be non-negative.");
-  }
-
-  const daysLate = Math.max(0, Math.ceil((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
-  const lateFee = (daysLate > 0) ? (monthlyRent * (lateFeeRate / 100)) : 0;
-  return parseFloat(lateFee.toFixed(2));
+  const calculatedLateFee = (baseRent * lateFeePercentage * daysLate) / 100;
+  return maxLateFee ? Math.min(calculatedLateFee, maxLateFee) : calculatedLateFee;
 }
 
-export function calculateLeaseBalance(details: LeaseBalanceDetails): number {
-  const { monthlyRent, paymentsMade } = details;
-  if (monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; status: string } {
+  const { totalLeaseAmount, amountPaid } = input;
+  if (totalLeaseAmount < 0 || amountPaid < 0) {
+    throw new Error('Invalid input values for lease balance summary.');
   }
-  if (!Array.isArray(paymentsMade) || paymentsMade.some(payment => payment < 0)) {
-    throw new Error("Payments made must be a non-negative number array.");
-  }
-
-  const totalPaid = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  const balance = monthlyRent - totalPaid;
-  return parseFloat(balance.toFixed(2));
+  const balance = totalLeaseAmount - amountPaid;
+  const status = balance > 0 ? 'Due' : 'Paid';
+  return { balance, status };
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  if (typeof amount !== 'number' || isNaN(amount)) {
-    throw new Error("Invalid amount.");
+export function formatCurrency(input: CurrencyFormatInput): string {
+  const { amount, currency, locale = 'en-US' } = input;
+  if (amount < 0 || !currency) {
+    throw new Error('Invalid input values for currency formatting.');
   }
-  if (typeof currency !== 'string' || currency.length !== 3) {
-    throw new Error("Invalid currency code.");
-  }
-
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
