@@ -1,72 +1,64 @@
 // src/utils/rentCalculator.ts
 
-interface RentProrationInput {
+interface LeaseDetails {
   monthlyRent: number;
-  daysInMonth: number;
+  leaseStartDate: Date;
+  leaseEndDate: Date;
+}
+
+interface ProrationDetails {
+  dailyRent: number;
   daysOccupied: number;
 }
 
-interface LateFeeCalculationInput {
-  monthlyRent: number;
-  lateFeePercentage: number;
-  daysLate: number;
+interface LateFeeDetails {
+  dueDate: Date;
+  paymentDate: Date;
+  lateFeeRate: number; // as a percentage
 }
 
-interface LeaseBalanceSummaryInput {
-  totalLeaseAmount: number;
-  amountPaid: number;
+interface LeaseBalanceSummary {
+  totalRentPaid: number;
+  totalRentDue: number;
 }
 
-interface CurrencyFormatInput {
-  amount: number;
-  currency: string;
-}
-
-export function calculateProratedRent(input: RentProrationInput): number {
-  const { monthlyRent, daysInMonth, daysOccupied } = input;
-
-  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error('Invalid input values for rent proration.');
+export function calculateProratedRent(lease: LeaseDetails, moveInDate: Date): number {
+  if (moveInDate < lease.leaseStartDate || moveInDate > lease.leaseEndDate) {
+    throw new Error("Move-in date must be within the lease period.");
   }
 
-  const dailyRent = monthlyRent / daysInMonth;
+  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
+  const dailyRent = lease.monthlyRent / daysInMonth;
+  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
+
   return dailyRent * daysOccupied;
 }
 
-export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { monthlyRent, lateFeePercentage, daysLate } = input;
-
-  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
-    throw new Error('Invalid input values for late fee calculation.');
+export function calculateLateFee(details: LateFeeDetails): number {
+  if (details.paymentDate <= details.dueDate) {
+    return 0;
   }
 
-  const lateFee = (monthlyRent * lateFeePercentage) / 100;
-  return lateFee * daysLate;
+  const daysLate = Math.ceil((details.paymentDate.getTime() - details.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+  const lateFee = (details.lateFeeRate / 100) * daysLate;
+
+  return lateFee;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; isPaidOff: boolean } {
-  const { totalLeaseAmount, amountPaid } = input;
+export function generateLeaseBalanceSummary(lease: LeaseDetails, payments: number[]): LeaseBalanceSummary {
+  const totalRentDue = lease.monthlyRent * ((lease.leaseEndDate.getFullYear() - lease.leaseStartDate.getFullYear()) * 12 + (lease.leaseEndDate.getMonth() - lease.leaseStartDate.getMonth()));
+  const totalRentPaid = payments.reduce((acc, payment) => acc + payment, 0);
 
-  if (totalLeaseAmount < 0 || amountPaid < 0) {
-    throw new Error('Invalid input values for lease balance summary.');
-  }
-
-  const balance = totalLeaseAmount - amountPaid;
   return {
-    balance,
-    isPaidOff: balance <= 0,
+    totalRentPaid,
+    totalRentDue
   };
 }
 
-export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currency } = input;
-
-  if (amount < 0 || !currency) {
-    throw new Error('Invalid input values for currency formatting.');
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  if (amount < 0) {
+    throw new Error("Amount cannot be negative.");
   }
 
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
