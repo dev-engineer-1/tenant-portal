@@ -1,85 +1,60 @@
 // src/utils/rentCalculator.ts
 
 interface LeaseDetails {
+  startDate: Date;
+  endDate: Date;
   monthlyRent: number;
-  leaseStartDate: Date;
-  leaseEndDate: Date;
+  dailyRent?: number;
 }
 
-interface ProrationDetails {
-  moveInDate: Date;
-  monthlyRent: number;
-}
-
-interface LateFeeDetails {
-  dueDate: Date;
+interface PaymentDetails {
+  amountPaid: number;
   paymentDate: Date;
-  monthlyRent: number;
-  lateFeePercentage: number;
 }
 
-interface BalanceSummary {
-  totalRent: number;
-  paymentsMade: number;
+interface LateFeePolicy {
+  flatFee: number;
+  dailyFee: number;
+  gracePeriodDays: number;
 }
 
-export function calculateProratedRent(details: ProrationDetails): number {
-  const { moveInDate, monthlyRent } = details;
+interface CurrencyFormatOptions {
+  locale: string;
+  currency: string;
+}
 
-  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
-    throw new Error("Invalid move-in date.");
-  }
-  if (monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
+export function calculateProratedRent(lease: LeaseDetails, moveInDate: Date): number {
+  if (moveInDate < lease.startDate || moveInDate > lease.endDate) {
+    throw new Error("Move-in date must be within the lease period.");
   }
 
   const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const proratedRent = (monthlyRent / daysInMonth) * (daysInMonth - moveInDate.getDate() + 1);
+  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
+  const dailyRent = lease.dailyRent ?? lease.monthlyRent / daysInMonth;
 
-  return parseFloat(proratedRent.toFixed(2));
+  return dailyRent * daysOccupied;
 }
 
-export function calculateLateFee(details: LateFeeDetails): number {
-  const { dueDate, paymentDate, monthlyRent, lateFeePercentage } = details;
-
-  if (!(dueDate instanceof Date) || isNaN(dueDate.getTime())) {
-    throw new Error("Invalid due date.");
-  }
-  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
-    throw new Error("Invalid payment date.");
-  }
-  if (monthlyRent <= 0) {
-    throw new Error("Monthly rent must be greater than zero.");
-  }
-  if (lateFeePercentage < 0) {
-    throw new Error("Late fee percentage cannot be negative.");
+export function calculateLateFee(payment: PaymentDetails, dueDate: Date, policy: LateFeePolicy): number {
+  if (payment.paymentDate <= dueDate) {
+    return 0;
   }
 
-  const daysLate = Math.max(0, Math.floor((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
-  const lateFee = (monthlyRent * lateFeePercentage / 100) * daysLate;
-
-  return parseFloat(lateFee.toFixed(2));
+  const daysLate = Math.max(0, Math.floor((payment.paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) - policy.gracePeriodDays);
+  return policy.flatFee + (daysLate * policy.dailyFee);
 }
 
-export function getLeaseBalanceSummary(details: BalanceSummary): number {
-  const { totalRent, paymentsMade } = details;
+export function calculateLeaseBalanceSummary(lease: LeaseDetails, payments: PaymentDetails[]): number {
+  const totalRent = lease.monthlyRent * ((lease.endDate.getFullYear() - lease.startDate.getFullYear()) * 12 + lease.endDate.getMonth() - lease.startDate.getMonth() + 1);
+  const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
 
-  if (totalRent < 0) {
-    throw new Error("Total rent cannot be negative.");
-  }
-  if (paymentsMade < 0) {
-    throw new Error("Payments made cannot be negative.");
-  }
-
-  const balance = totalRent - paymentsMade;
-
-  return parseFloat(balance.toFixed(2));
+  return totalRent - totalPaid;
 }
 
-export function formatCurrency(amount: number): string {
-  if (typeof amount !== 'number' || isNaN(amount)) {
-    throw new Error("Invalid amount.");
+export function formatCurrency(amount: number, options: CurrencyFormatOptions): string {
+  if (amount < 0) {
+    throw new Error("Amount cannot be negative.");
   }
 
-  return `$${amount.toFixed(2)}`;
+  return new Intl.NumberFormat(options.locale, { style: 'currency', currency: options.currency }).format(amount);
 }
