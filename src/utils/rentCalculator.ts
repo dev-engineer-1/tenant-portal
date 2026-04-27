@@ -1,52 +1,58 @@
 // src/utils/rentCalculator.ts
 
-export interface RentDetails {
+interface LeaseDetails {
   monthlyRent: number;
-  startDate: Date;
-  endDate: Date;
+  leaseStartDate: Date;
+  leaseEndDate: Date;
 }
 
-export interface LateFeeDetails {
-  dueDate: Date;
+interface ProrationDetails {
+  dailyRent: number;
+  daysOccupied: number;
+}
+
+interface LateFeeDetails {
+  rentDueDate: Date;
   paymentDate: Date;
-  lateFeeRate: number; // Percentage as a decimal (e.g., 0.05 for 5%)
+  lateFeePercentage: number;
 }
 
-export interface LeaseBalanceDetails {
-  totalRent: number;
-  paymentsMade: number[];
+interface LeaseBalanceDetails {
+  totalRentPaid: number;
+  totalRentDue: number;
 }
 
-export function calculateProratedRent(rentDetails: RentDetails): number {
-  const { monthlyRent, startDate, endDate } = rentDetails;
-  if (monthlyRent <= 0) throw new Error("Monthly rent must be greater than zero.");
-  if (startDate >= endDate) throw new Error("Start date must be before end date.");
-
-  const daysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-
-  return (monthlyRent / daysInMonth) * daysOccupied;
+export function calculateProratedRent(leaseDetails: LeaseDetails, prorationDetails: ProrationDetails): number {
+  if (prorationDetails.dailyRent <= 0 || prorationDetails.daysOccupied < 0) {
+    throw new Error('Invalid proration details provided.');
+  }
+  return prorationDetails.dailyRent * prorationDetails.daysOccupied;
 }
 
 export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
-  const { dueDate, paymentDate, lateFeeRate } = lateFeeDetails;
-  if (lateFeeRate < 0) throw new Error("Late fee rate must be non-negative.");
-  if (paymentDate <= dueDate) return 0;
-
-  const daysLate = (paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24);
-  return lateFeeRate * daysLate;
+  const { rentDueDate, paymentDate, lateFeePercentage } = lateFeeDetails;
+  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
+    throw new Error('Invalid late fee percentage.');
+  }
+  if (paymentDate <= rentDueDate) {
+    return 0;
+  }
+  const daysLate = Math.ceil((paymentDate.getTime() - rentDueDate.getTime()) / (1000 * 60 * 60 * 24));
+  return daysLate * (lateFeePercentage / 100);
 }
 
-export function calculateLeaseBalance(leaseBalanceDetails: LeaseBalanceDetails): number {
-  const { totalRent, paymentsMade } = leaseBalanceDetails;
-  if (totalRent < 0) throw new Error("Total rent must be non-negative.");
-  if (paymentsMade.some(payment => payment < 0)) throw new Error("Payments cannot be negative.");
-
-  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return totalRent - totalPayments;
+export function getLeaseBalanceSummary(leaseBalanceDetails: LeaseBalanceDetails): string {
+  const { totalRentPaid, totalRentDue } = leaseBalanceDetails;
+  if (totalRentPaid < 0 || totalRentDue < 0) {
+    throw new Error('Invalid lease balance details.');
+  }
+  const balance = totalRentDue - totalRentPaid;
+  return balance >= 0 ? `Balance due: $${balance.toFixed(2)}` : `Overpaid: $${Math.abs(balance).toFixed(2)}`;
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  if (amount < 0) throw new Error("Amount cannot be negative.");
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+export function formatCurrency(amount: number): string {
+  if (amount < 0) {
+    throw new Error('Amount cannot be negative.');
+  }
+  return `$${amount.toFixed(2)}`;
 }
