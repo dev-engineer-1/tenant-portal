@@ -1,63 +1,59 @@
-# NestIQ: Revolutionizing Property Management with AI
+# NestIQ
 
-NestIQ is a cutting-edge B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. With NestIQ, property managers can efficiently manage up to three times more properties with the same team, allowing them to focus on growth and tenant satisfaction.
+**Automate Property Management with AI**
+
+NestIQ is a B2B SaaS platform designed to revolutionize property management by automating tenant communication, maintenance requests, and rent collection. By integrating AI-driven solutions, NestIQ enables property managers to efficiently handle 3x more properties without expanding their team.
 
 ## Problem Solved
 
-Property managers often face the challenge of handling repetitive and time-consuming tasks that detract from their ability to expand their portfolios and provide exceptional service. NestIQ addresses this by automating key operations, enabling property managers to streamline their workflows and enhance productivity.
+Property managers often face overwhelming workloads due to repetitive tasks such as tenant communication, maintenance coordination, and rent collection. NestIQ streamlines these operations, allowing managers to focus on strategic growth and customer satisfaction.
 
 ## Key Features
 
-- **Automated Tenant Communication**: Leverage AI to handle tenant inquiries and updates seamlessly.
-- **Maintenance Request Management**: Simplify the process of submitting and tracking maintenance requests.
-- **Efficient Rent Collection**: Automate rent payment processes with secure and reliable transactions.
-- **Portfolio Integration**: Easily connect and manage your property portfolio within the platform.
-- **Scalable Management**: Manage more properties without increasing your team size.
+- **Automated Tenant Communication**: AI-driven chatbots handle routine tenant inquiries, ensuring timely and accurate responses.
+- **Maintenance Request Management**: Simplified submission and tracking of maintenance requests through a dedicated portal.
+- **Seamless Rent Collection**: Integrated payment processing with automated reminders and receipts.
+- **Portfolio Integration**: Easily connect and manage multiple properties within a single platform.
+- **Scalable Operations**: Manage more properties with the same team, reducing overhead and increasing efficiency.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **Frontend**: React
+- **Frontend**: React.js
 - **Database**: PostgreSQL
-- **Payment Processing**: Stripe
 - **AI/ML**: TensorFlow, PyTorch
+- **Payment Processing**: Stripe
+- **Hosting**: AWS
 
 ## Getting Started
 
-To get started with NestIQ, follow these steps:
+To set up the NestIQ platform locally, follow these steps:
 
-1. **Clone the Repository**:
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up the Environment**:
-   Ensure you have Python 3.8+ installed. Create a virtual environment and activate it:
+2. **Set Up the Virtual Environment**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
-3. **Install Dependencies**:
+3. **Install Dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Run the Application**:
-   Start the FastAPI server:
+4. **Run the Backend Server**
    ```bash
    uvicorn src.main:app --reload
    ```
 
-5. **Explore the API**:
-   Access the API documentation at `http://localhost:8000/docs`.
+5. **Access the Application**
+   Open your browser and navigate to `http://localhost:8000` to start using NestIQ.
 
 ## Built with Agentix
 
-NestIQ is proudly built with [Agentix](https://agentix.com), leveraging advanced AI capabilities to transform property management.
-
----
-
-For more information, visit our website or contact us at support@nestiq.com.
-```
+NestIQ is proudly built with Agentix, leveraging cutting-edge technology to deliver exceptional solutions for property management.
