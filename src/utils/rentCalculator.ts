@@ -1,60 +1,81 @@
 // src/utils/rentCalculator.ts
 
 interface LeaseDetails {
-  startDate: Date;
-  endDate: Date;
-  monthlyRent: number;
-  dailyRent?: number;
+    monthlyRent: number;
+    leaseStartDate: Date;
+    leaseEndDate: Date;
 }
 
-interface PaymentDetails {
-  amountPaid: number;
-  paymentDate: Date;
+interface ProrationDetails {
+    dailyRent: number;
+    daysOccupied: number;
 }
 
-interface LateFeePolicy {
-  flatFee: number;
-  dailyFee: number;
-  gracePeriodDays: number;
+interface LateFeeDetails {
+    baseFee: number;
+    dailyFee: number;
+    daysLate: number;
 }
 
-interface CurrencyFormatOptions {
-  locale: string;
-  currency: string;
+interface LeaseBalanceSummary {
+    totalRentPaid: number;
+    totalRentDue: number;
 }
 
-export function calculateProratedRent(lease: LeaseDetails, moveInDate: Date): number {
-  if (moveInDate < lease.startDate || moveInDate > lease.endDate) {
-    throw new Error("Move-in date must be within the lease period.");
-  }
-
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-  const dailyRent = lease.dailyRent ?? lease.monthlyRent / daysInMonth;
-
-  return dailyRent * daysOccupied;
+function calculateDailyRent(monthlyRent: number): number {
+    if (monthlyRent <= 0) {
+        throw new Error("Monthly rent must be greater than zero.");
+    }
+    return monthlyRent / 30;
 }
 
-export function calculateLateFee(payment: PaymentDetails, dueDate: Date, policy: LateFeePolicy): number {
-  if (payment.paymentDate <= dueDate) {
-    return 0;
-  }
-
-  const daysLate = Math.max(0, Math.floor((payment.paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) - policy.gracePeriodDays);
-  return policy.flatFee + (daysLate * policy.dailyFee);
+function calculateProratedRent(details: ProrationDetails): number {
+    const { dailyRent, daysOccupied } = details;
+    if (dailyRent <= 0 || daysOccupied < 0) {
+        throw new Error("Invalid proration details provided.");
+    }
+    return dailyRent * daysOccupied;
 }
 
-export function calculateLeaseBalanceSummary(lease: LeaseDetails, payments: PaymentDetails[]): number {
-  const totalRent = lease.monthlyRent * ((lease.endDate.getFullYear() - lease.startDate.getFullYear()) * 12 + lease.endDate.getMonth() - lease.startDate.getMonth() + 1);
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
-
-  return totalRent - totalPaid;
+function calculateLateFee(details: LateFeeDetails): number {
+    const { baseFee, dailyFee, daysLate } = details;
+    if (baseFee < 0 || dailyFee < 0 || daysLate < 0) {
+        throw new Error("Invalid late fee details provided.");
+    }
+    return baseFee + (dailyFee * daysLate);
 }
 
-export function formatCurrency(amount: number, options: CurrencyFormatOptions): string {
-  if (amount < 0) {
-    throw new Error("Amount cannot be negative.");
-  }
+function calculateLeaseBalanceSummary(leaseDetails: LeaseDetails, payments: number[]): LeaseBalanceSummary {
+    const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+    if (monthlyRent <= 0 || leaseStartDate >= leaseEndDate) {
+        throw new Error("Invalid lease details provided.");
+    }
 
-  return new Intl.NumberFormat(options.locale, { style: 'currency', currency: options.currency }).format(amount);
+    const totalMonths = (leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + (leaseEndDate.getMonth() - leaseStartDate.getMonth());
+    const totalRentDue = monthlyRent * totalMonths;
+    const totalRentPaid = payments.reduce((acc, payment) => acc + payment, 0);
+
+    return {
+        totalRentPaid,
+        totalRentDue
+    };
 }
+
+function formatCurrency(amount: number, currency: string = 'USD'): string {
+    if (amount < 0) {
+        throw new Error("Amount cannot be negative.");
+    }
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+}
+
+export {
+    LeaseDetails,
+    ProrationDetails,
+    LateFeeDetails,
+    LeaseBalanceSummary,
+    calculateDailyRent,
+    calculateProratedRent,
+    calculateLateFee,
+    calculateLeaseBalanceSummary,
+    formatCurrency
+};
