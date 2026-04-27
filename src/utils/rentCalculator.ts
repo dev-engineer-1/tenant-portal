@@ -1,73 +1,50 @@
 // src/utils/rentCalculator.ts
 
-interface LeaseDetails {
+export interface RentDetails {
   monthlyRent: number;
-  leaseStartDate: Date;
-  leaseEndDate: Date;
-}
-
-interface ProrationDetails {
-  dailyRent: number;
+  daysInMonth: number;
   daysOccupied: number;
 }
 
-interface LateFeeDetails {
+export interface LateFeeDetails {
   baseFee: number;
   dailyFee: number;
   daysLate: number;
 }
 
-interface LeaseBalanceSummary {
+export interface LeaseSummary {
   totalRentPaid: number;
   totalRentDue: number;
-  outstandingBalance: number;
 }
 
-export function calculateProratedRent(lease: LeaseDetails, moveInDate: Date): number {
-  if (moveInDate < lease.leaseStartDate || moveInDate > lease.leaseEndDate) {
-    throw new Error('Move-in date must be within the lease period.');
+export function calculateProratedRent(details: RentDetails): number {
+  const { monthlyRent, daysInMonth, daysOccupied } = details;
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0 || daysOccupied > daysInMonth) {
+    throw new Error('Invalid rent details provided.');
   }
-
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const dailyRent = lease.monthlyRent / daysInMonth;
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-
-  return dailyRent * daysOccupied;
+  return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
 export function calculateLateFee(details: LateFeeDetails): number {
-  if (details.daysLate < 0) {
-    throw new Error('Days late cannot be negative.');
+  const { baseFee, dailyFee, daysLate } = details;
+  if (baseFee < 0 || dailyFee < 0 || daysLate < 0) {
+    throw new Error('Invalid late fee details provided.');
   }
-
-  return details.baseFee + (details.dailyFee * details.daysLate);
+  return baseFee + (dailyFee * daysLate);
 }
 
-export function summarizeLeaseBalance(lease: LeaseDetails, payments: number[]): LeaseBalanceSummary {
-  const totalRentDue = calculateTotalRentDue(lease);
-  const totalRentPaid = payments.reduce((acc, payment) => acc + payment, 0);
-  const outstandingBalance = totalRentDue - totalRentPaid;
-
-  return {
-    totalRentPaid,
-    totalRentDue,
-    outstandingBalance,
-  };
+export function generateLeaseBalanceSummary(summary: LeaseSummary): string {
+  const { totalRentPaid, totalRentDue } = summary;
+  if (totalRentPaid < 0 || totalRentDue < 0) {
+    throw new Error('Invalid lease summary details provided.');
+  }
+  const balance = totalRentDue - totalRentPaid;
+  return `Total Rent Due: ${formatCurrency(totalRentDue)}, Total Rent Paid: ${formatCurrency(totalRentPaid)}, Balance: ${formatCurrency(balance)}`;
 }
 
-function calculateTotalRentDue(lease: LeaseDetails): number {
-  const months = (lease.leaseEndDate.getFullYear() - lease.leaseStartDate.getFullYear()) * 12 +
-                 (lease.leaseEndDate.getMonth() - lease.leaseStartDate.getMonth()) + 1;
-  return lease.monthlyRent * months;
-}
-
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
+export function formatCurrency(amount: number): string {
   if (amount < 0) {
     throw new Error('Amount cannot be negative.');
   }
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount);
+  return `$${amount.toFixed(2)}`;
 }
