@@ -1,25 +1,30 @@
-```markdown
-# NestIQ: Automate Your Property Management
+# NestIQ
 
-NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. By connecting their portfolio to NestIQ, property managers can efficiently manage up to three times more properties with the same team.
+**Automate Property Management with AI**
 
-## Problem Statement
+---
 
-Managing multiple properties involves repetitive and time-consuming tasks such as tenant communication, handling maintenance requests, and collecting rent. These tasks can overwhelm property managers, limiting their ability to scale operations effectively.
+## Overview
+
+NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. By integrating AI-driven solutions, NestIQ allows property managers to efficiently manage up to three times more properties with the same team, reducing operational overhead and enhancing tenant satisfaction.
+
+## Problem Solved
+
+Property managers often face challenges in handling repetitive tasks such as tenant inquiries, maintenance scheduling, and rent collection. These tasks can be time-consuming and error-prone, limiting the ability to scale operations. NestIQ addresses these challenges by automating these processes, enabling property managers to focus on strategic growth and tenant relations.
 
 ## Key Features
 
 - **Automated Tenant Communication**: Streamline tenant interactions with AI-driven responses.
-- **Maintenance Request Management**: Simplify maintenance workflows with an intuitive request system.
-- **Rent Collection Automation**: Secure and efficient rent processing using Stripe.
-- **Portfolio Integration**: Seamlessly connect your property portfolio for centralized management.
-- **Scalable Operations**: Manage more properties without increasing team size.
+- **Maintenance Request Management**: Efficiently handle maintenance requests with automated scheduling and tracking.
+- **Rent Collection Automation**: Simplify rent collection with integrated payment solutions.
+- **Portfolio Integration**: Seamlessly connect and manage your property portfolio.
+- **Scalable Operations**: Manage more properties with the same team, enhancing productivity.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **Payments**: Stripe
-- **AI**: Natural Language Processing for tenant communication
+- **Payments**: Stripe API
+- **Authentication**: OAuth2
 - **Database**: PostgreSQL
 - **Hosting**: AWS
 
@@ -27,43 +32,42 @@ Managing multiple properties involves repetitive and time-consuming tasks such a
 
 To get started with NestIQ, follow these steps:
 
-1. **Clone the Repository**:
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up the Environment**:
-   - Ensure you have Python 3.8+ installed.
-   - Create a virtual environment:
-     ```bash
-     python -m venv venv
-     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-     ```
-   - Install dependencies:
-     ```bash
-     pip install -r requirements.txt
-     ```
+2. **Set Up Virtual Environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
-3. **Configure Environment Variables**:
-   - Create a `.env` file in the root directory and add your configuration:
-     ```
-     STRIPE_API_KEY=your_stripe_api_key
-     DATABASE_URL=your_database_url
-     ```
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4. **Run the Application**:
-   - Start the FastAPI server:
-     ```bash
-     uvicorn src.main:app --reload
-     ```
+4. **Configure Environment Variables**
+   Create a `.env` file in the root directory and add your configuration details:
+   ```
+   STRIPE_API_KEY=your_stripe_api_key
+   DATABASE_URL=your_database_url
+   ```
 
-5. **Access the API**:
-   - Open your browser and navigate to `http://localhost:8000/docs` to explore the API documentation.
+5. **Run the Application**
+   ```bash
+   uvicorn src.main:app --reload
+   ```
+
+6. **Access the Application**
+   Open your browser and navigate to `http://localhost:8000` to access the NestIQ platform.
 
 ## Built with Agentix
 
-NestIQ is proudly built with [Agentix](https://agentix.ai), leveraging cutting-edge AI technology to transform property management.
+NestIQ is proudly built with Agentix, leveraging cutting-edge technology to deliver exceptional solutions for property management.
 
 ---
-```
+
+For more information, visit our [website](https://nestiq.com) or follow us on [LinkedIn](https://linkedin.com/company/nestiq) and [X](https://x.com/nestiq).
