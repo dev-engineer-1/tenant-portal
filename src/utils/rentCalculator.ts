@@ -1,52 +1,81 @@
+// src/utils/rentCalculator.ts
+
 interface LeaseDetails {
   monthlyRent: number;
   leaseStartDate: Date;
   leaseEndDate: Date;
 }
 
-interface PaymentDetails {
-  amountPaid: number;
+interface ProrationDetails {
+  moveInDate: Date;
+  monthlyRent: number;
+}
+
+interface LateFeeDetails {
+  dueDate: Date;
   paymentDate: Date;
+  monthlyRent: number;
+  lateFeePercentage: number;
 }
 
-interface LateFeePolicy {
-  feeAmount: number;
-  gracePeriodDays: number;
+interface LeaseBalanceDetails {
+  monthlyRent: number;
+  paymentsMade: number;
+  monthsElapsed: number;
 }
 
-export function calculateProratedRent(leaseDetails: LeaseDetails, moveInDate: Date): number {
-  if (moveInDate < leaseDetails.leaseStartDate || moveInDate > leaseDetails.leaseEndDate) {
-    throw new Error("Move-in date must be within the lease period.");
+export function calculateProratedRent(details: ProrationDetails): number {
+  const { moveInDate, monthlyRent } = details;
+  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
+    throw new Error('Invalid move-in date');
+  }
+  if (monthlyRent <= 0) {
+    throw new Error('Monthly rent must be greater than zero');
   }
 
   const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
   const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-  const proratedRent = (leaseDetails.monthlyRent / daysInMonth) * daysOccupied;
-
-  return parseFloat(proratedRent.toFixed(2));
+  return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
-export function calculateLateFee(paymentDetails: PaymentDetails, dueDate: Date, lateFeePolicy: LateFeePolicy): number {
-  const daysLate = Math.floor((paymentDetails.paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (daysLate > lateFeePolicy.gracePeriodDays) {
-    return lateFeePolicy.feeAmount;
+export function calculateLateFee(details: LateFeeDetails): number {
+  const { dueDate, paymentDate, monthlyRent, lateFeePercentage } = details;
+  if (!(dueDate instanceof Date) || isNaN(dueDate.getTime())) {
+    throw new Error('Invalid due date');
+  }
+  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
+    throw new Error('Invalid payment date');
+  }
+  if (monthlyRent <= 0) {
+    throw new Error('Monthly rent must be greater than zero');
+  }
+  if (lateFeePercentage < 0) {
+    throw new Error('Late fee percentage must be non-negative');
   }
 
-  return 0;
+  const daysLate = Math.max(0, Math.ceil((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+  return daysLate > 0 ? (monthlyRent * (lateFeePercentage / 100)) : 0;
 }
 
-export function calculateLeaseBalance(leaseDetails: LeaseDetails, payments: PaymentDetails[]): number {
-  const totalRent = leaseDetails.monthlyRent * ((leaseDetails.leaseEndDate.getFullYear() - leaseDetails.leaseStartDate.getFullYear()) * 12 + (leaseDetails.leaseEndDate.getMonth() - leaseDetails.leaseStartDate.getMonth()) + 1);
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
-
-  return parseFloat((totalRent - totalPaid).toFixed(2));
-}
-
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  if (amount < 0) {
-    throw new Error("Amount cannot be negative.");
+export function calculateLeaseBalance(details: LeaseBalanceDetails): number {
+  const { monthlyRent, paymentsMade, monthsElapsed } = details;
+  if (monthlyRent <= 0) {
+    throw new Error('Monthly rent must be greater than zero');
+  }
+  if (paymentsMade < 0) {
+    throw new Error('Payments made cannot be negative');
+  }
+  if (monthsElapsed < 0) {
+    throw new Error('Months elapsed cannot be negative');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  const totalRentDue = monthlyRent * monthsElapsed;
+  return totalRentDue - paymentsMade;
+}
+
+export function formatCurrency(amount: number): string {
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    throw new Error('Invalid amount');
+  }
+  return `$${amount.toFixed(2)}`;
 }
