@@ -1,32 +1,31 @@
-# NestIQ
+# NestIQ: Automate Property Management with AI
 
-**Automate Your Property Management with AI**
-
-NestIQ is a B2B SaaS platform designed to streamline the operations of real estate property managers. By leveraging AI, NestIQ automates tenant communication, maintenance requests, and rent collection, enabling property managers to efficiently manage three times more properties with the same team.
+NestIQ is a B2B SaaS platform designed to streamline operations for real estate property managers. By leveraging AI, NestIQ automates tenant communication, maintenance requests, and rent collection, allowing property managers to efficiently oversee up to three times more properties with the same team.
 
 ## Problem Solved
 
-Property managers often face the challenge of handling repetitive and time-consuming tasks. NestIQ addresses this by automating these operations, freeing up managers to focus on growth and tenant satisfaction.
+Managing a large portfolio of properties involves repetitive tasks that can drain resources and time. NestIQ addresses this by automating these tasks, enabling property managers to focus on growth and tenant satisfaction.
 
 ## Key Features
 
-- **Automated Tenant Communication**: AI-driven responses and notifications to keep tenants informed and engaged.
-- **Maintenance Request Management**: Streamlined process for submitting, tracking, and resolving maintenance issues.
-- **Rent Collection Automation**: Seamless integration with payment systems to automate rent collection and reminders.
-- **Portfolio Integration**: Easy connection of property portfolios for centralized management.
-- **Scalable Operations**: Manage more properties without increasing team size.
+- **Automated Tenant Communication**: AI-driven responses to common tenant inquiries.
+- **Efficient Maintenance Requests**: Streamlined process for submitting and tracking maintenance issues.
+- **Seamless Rent Collection**: Integrated payment processing to simplify rent transactions.
+- **Portfolio Management**: Centralized dashboard for managing multiple properties.
+- **Scalable Solutions**: Designed to grow with your property management needs.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **Payments**: Stripe
-- **AI**: Natural Language Processing (NLP) for tenant communication
+- **Frontend**: React.js
 - **Database**: PostgreSQL
+- **AI/ML**: TensorFlow, PyTorch
+- **Payments**: Stripe
 - **Hosting**: AWS
 
 ## Getting Started
 
-To get started with NestIQ, follow these steps:
+Follow these steps to set up the NestIQ backend on your local machine:
 
 1. **Clone the Repository**
    ```bash
@@ -34,13 +33,11 @@ To get started with NestIQ, follow these steps:
    cd nestiq
    ```
 
-2. **Set Up the Environment**
-   - Install Python 3.8 or later.
-   - Create a virtual environment:
-     ```bash
-     python -m venv venv
-     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-     ```
+2. **Set Up a Virtual Environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
 3. **Install Dependencies**
    ```bash
@@ -48,11 +45,8 @@ To get started with NestIQ, follow these steps:
    ```
 
 4. **Configure Environment Variables**
-   - Create a `.env` file in the root directory and add your configuration:
-     ```
-     STRIPE_API_KEY=your_stripe_api_key
-     DATABASE_URL=your_database_url
-     ```
+   - Create a `.env` file in the root directory.
+   - Add your Stripe API keys and database credentials.
 
 5. **Run the Application**
    ```bash
@@ -60,8 +54,8 @@ To get started with NestIQ, follow these steps:
    ```
 
 6. **Access the API**
-   - Open your browser and navigate to `http://localhost:8000/docs` to explore the API documentation.
+   - Visit `http://localhost:8000/docs` to explore the API documentation.
 
 ## Built with Agentix
 
-NestIQ is proudly built with [Agentix](https://agentix.com), empowering innovative solutions in property management.
+NestIQ is proudly built with Agentix, ensuring robust and scalable solutions for property management automation.
