@@ -1,66 +1,61 @@
 # NestIQ: Automate Your Property Management
 
-NestIQ is a B2B SaaS platform designed to streamline property management operations using AI. By automating tenant communication, maintenance requests, and rent collection, NestIQ empowers property managers to efficiently manage more properties with the same team.
+NestIQ is a B2B SaaS platform leveraging AI to streamline tenant communication, automate maintenance requests, and simplify rent collection for real estate property managers. Manage 3x more properties with the same team.
 
 ## Problem Solved
 
-Property managers often face overwhelming workloads due to repetitive tasks such as tenant communication, handling maintenance requests, and collecting rent. NestIQ addresses these challenges by automating these processes, enabling property managers to focus on growth and improving tenant satisfaction.
+Property managers often face overwhelming workloads due to repetitive tasks such as tenant communication, handling maintenance requests, and managing rent collection. NestIQ automates these operations, allowing property managers to focus on scaling their portfolios efficiently.
 
 ## Key Features
 
-- **Automated Tenant Communication**: Seamlessly handle tenant inquiries and updates using AI-driven responses.
-- **Maintenance Request Management**: Streamline the process of receiving, tracking, and resolving maintenance requests.
-- **Rent Collection Automation**: Simplify rent collection with integrated payment solutions.
-- **Portfolio Integration**: Connect and manage your entire property portfolio in one place.
-- **Scalable Management**: Manage up to 3x more properties without increasing your team size.
+- **AI-Powered Tenant Communication**: Automate responses to common tenant inquiries.
+- **Maintenance Request Automation**: Streamline the process of receiving and managing maintenance requests.
+- **Seamless Rent Collection**: Simplify rent payments with integrated payment solutions.
+- **Portfolio Integration**: Easily connect and manage multiple properties from a single platform.
+- **Scalable Management**: Handle more properties without increasing team size.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **Frontend**: React.js
+- **Frontend**: React
 - **Database**: PostgreSQL
-- **Payment Processing**: Stripe
-- **AI**: OpenAI GPT-3
+- **AI**: TensorFlow
+- **Payments**: Stripe
 - **Hosting**: AWS
 
 ## Getting Started
 
-To set up the NestIQ platform locally for development, follow these steps:
+To get started with NestIQ, follow these steps:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/nestiq.git
+   git clone https://github.com/nestiq/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up the Virtual Environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+2. **Set Up the Environment**
+   - Ensure Python 3.8+ is installed.
+   - Create a virtual environment:
+     ```bash
+     python -m venv venv
+     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+     ```
+   - Install dependencies:
+     ```bash
+     pip install -r requirements.txt
+     ```
 
-3. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. **Configure Environment Variables**
+   - Create a `.env` file based on `.env.example` and fill in necessary configurations such as database credentials and Stripe API keys.
 
-4. **Set Up Environment Variables**
-   Create a `.env` file in the root directory and add the following:
-   ```plaintext
-   DATABASE_URL=your_database_url
-   STRIPE_API_KEY=your_stripe_api_key
-   ```
-
-5. **Run the Application**
+4. **Run the Application**
    ```bash
    uvicorn src.main:app --reload
    ```
 
-6. **Access the API**
-   Visit `http://localhost:8000` to access the API documentation and test endpoints.
+5. **Access the API**
+   - The API will be available at `http://localhost:8000`.
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, leveraging cutting-edge AI technologies to transform property management.
-
-For more information, visit our [website](https://nestiq.com) or follow us on [LinkedIn](https://www.linkedin.com/company/nestiq) and [X](https://twitter.com/nestiq).
+NestIQ is proudly built with Agentix, enabling rapid development and deployment of AI-driven solutions for property management.
