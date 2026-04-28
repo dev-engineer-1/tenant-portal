@@ -1,64 +1,57 @@
 // src/utils/rentCalculator.ts
 
 interface LeaseDetails {
-  startDate: Date;
-  endDate: Date;
   monthlyRent: number;
+  leaseStartDate: Date;
+  leaseEndDate: Date;
 }
 
-interface PaymentDetails {
+interface ProrationDetails {
+  dailyRent: number;
+  daysOccupied: number;
+}
+
+interface LateFeeDetails {
+  rentDueDate: Date;
   paymentDate: Date;
-  dueDate: Date;
-  amountPaid: number;
+  lateFeePercentage: number;
 }
 
-interface LateFeePolicy {
-  dailyLateFee: number;
-  gracePeriodDays: number;
+interface LeaseBalanceSummary {
+  totalRent: number;
+  totalPaid: number;
 }
 
-export function calculateProratedRent(lease: LeaseDetails, moveInDate: Date): number {
-  if (moveInDate < lease.startDate || moveInDate > lease.endDate) {
-    throw new Error('Move-in date must be within the lease period.');
+export function calculateProratedRent(lease: LeaseDetails, proration: ProrationDetails): number {
+  if (proration.dailyRent <= 0 || proration.daysOccupied < 0) {
+    throw new Error("Invalid proration details provided.");
   }
-
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-  const proratedRent = (lease.monthlyRent / daysInMonth) * daysOccupied;
-
-  return parseFloat(proratedRent.toFixed(2));
+  return proration.dailyRent * proration.daysOccupied;
 }
 
-export function calculateLateFee(payment: PaymentDetails, lateFeePolicy: LateFeePolicy): number {
-  const gracePeriodEndDate = new Date(payment.dueDate);
-  gracePeriodEndDate.setDate(gracePeriodEndDate.getDate() + lateFeePolicy.gracePeriodDays);
-
-  if (payment.paymentDate <= gracePeriodEndDate) {
+export function calculateLateFee(details: LateFeeDetails): number {
+  const { rentDueDate, paymentDate, lateFeePercentage } = details;
+  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
+    throw new Error("Invalid late fee percentage.");
+  }
+  if (paymentDate <= rentDueDate) {
     return 0;
   }
-
-  const lateDays = Math.ceil((payment.paymentDate.getTime() - gracePeriodEndDate.getTime()) / (1000 * 60 * 60 * 24));
-  const lateFee = lateDays * lateFeePolicy.dailyLateFee;
-
-  return parseFloat(lateFee.toFixed(2));
+  const daysLate = Math.ceil((paymentDate.getTime() - rentDueDate.getTime()) / (1000 * 60 * 60 * 24));
+  return daysLate * lateFeePercentage;
 }
 
-export function calculateLeaseBalance(lease: LeaseDetails, payments: PaymentDetails[]): number {
-  const totalRent = lease.monthlyRent * ((lease.endDate.getFullYear() - lease.startDate.getFullYear()) * 12 + (lease.endDate.getMonth() - lease.startDate.getMonth() + 1));
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
-
-  if (totalPaid > totalRent) {
-    throw new Error('Total payments exceed total rent.');
+export function calculateLeaseBalanceSummary(summary: LeaseBalanceSummary): number {
+  const { totalRent, totalPaid } = summary;
+  if (totalRent < 0 || totalPaid < 0) {
+    throw new Error("Invalid lease balance summary details.");
   }
-
-  const balance = totalRent - totalPaid;
-  return parseFloat(balance.toFixed(2));
+  return totalRent - totalPaid;
 }
 
 export function formatCurrency(amount: number, currency: string = 'USD'): string {
   if (amount < 0) {
-    throw new Error('Amount cannot be negative.');
+    throw new Error("Invalid amount for currency formatting.");
   }
-
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
