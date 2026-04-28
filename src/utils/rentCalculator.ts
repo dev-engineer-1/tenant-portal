@@ -7,75 +7,66 @@ interface LeaseDetails {
 }
 
 interface ProrationDetails {
-  moveInDate: Date;
+  startDate: Date;
+  endDate: Date;
   monthlyRent: number;
 }
 
 interface LateFeeDetails {
-  dueDate: Date;
-  paymentDate: Date;
   monthlyRent: number;
   lateFeePercentage: number;
+  daysLate: number;
 }
 
-interface LeaseBalanceDetails {
-  monthlyRent: number;
-  paymentsMade: number[];
+interface CurrencyFormatOptions {
+  locale: string;
+  currency: string;
 }
 
 export function calculateProratedRent(details: ProrationDetails): number {
-  const { moveInDate, monthlyRent } = details;
-  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
-    throw new Error('Invalid move-in date');
-  }
-  if (monthlyRent <= 0) {
-    throw new Error('Monthly rent must be greater than zero');
+  const { startDate, endDate, monthlyRent } = details;
+  if (startDate >= endDate) {
+    throw new Error('Start date must be before end date.');
   }
 
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-  return (monthlyRent / daysInMonth) * daysOccupied;
+  const totalDaysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
+  const daysOccupied = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+  return (monthlyRent / totalDaysInMonth) * daysOccupied;
 }
 
 export function calculateLateFee(details: LateFeeDetails): number {
-  const { dueDate, paymentDate, monthlyRent, lateFeePercentage } = details;
-  if (!(dueDate instanceof Date) || isNaN(dueDate.getTime())) {
-    throw new Error('Invalid due date');
+  const { monthlyRent, lateFeePercentage, daysLate } = details;
+  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
+    throw new Error('Late fee percentage must be between 0 and 100.');
   }
-  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
-    throw new Error('Invalid payment date');
-  }
-  if (monthlyRent <= 0) {
-    throw new Error('Monthly rent must be greater than zero');
-  }
-  if (lateFeePercentage < 0) {
-    throw new Error('Late fee percentage cannot be negative');
+  if (daysLate < 0) {
+    throw new Error('Days late cannot be negative.');
   }
 
-  const daysLate = Math.max(0, Math.floor((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
-  return daysLate > 0 ? (monthlyRent * lateFeePercentage) / 100 : 0;
+  return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
 }
 
-export function calculateLeaseBalance(details: LeaseBalanceDetails): number {
-  const { monthlyRent, paymentsMade } = details;
-  if (monthlyRent <= 0) {
-    throw new Error('Monthly rent must be greater than zero');
+export function calculateLeaseBalance(lease: LeaseDetails, paymentsMade: number): number {
+  const { monthlyRent, leaseStartDate, leaseEndDate } = lease;
+  if (leaseStartDate >= leaseEndDate) {
+    throw new Error('Lease start date must be before lease end date.');
   }
-  if (!Array.isArray(paymentsMade) || paymentsMade.some(payment => payment < 0)) {
-    throw new Error('Payments made must be a valid array of non-negative numbers');
+  if (paymentsMade < 0) {
+    throw new Error('Payments made cannot be negative.');
   }
 
-  const totalPaid = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return monthlyRent - totalPaid;
+  const totalMonths = (leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + (leaseEndDate.getMonth() - leaseStartDate.getMonth());
+  const totalRent = monthlyRent * totalMonths;
+
+  return totalRent - paymentsMade;
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
+export function formatCurrency(amount: number, options: CurrencyFormatOptions): string {
+  const { locale, currency } = options;
   if (amount < 0) {
-    throw new Error('Amount cannot be negative');
-  }
-  if (typeof currency !== 'string' || currency.length !== 3) {
-    throw new Error('Invalid currency code');
+    throw new Error('Amount cannot be negative.');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
