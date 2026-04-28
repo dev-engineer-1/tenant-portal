@@ -1,49 +1,75 @@
 // src/utils/rentCalculator.ts
 
-export interface RentDetails {
+interface LeaseDetails {
   monthlyRent: number;
-  startDate: Date;
-  endDate: Date;
-  paymentDate?: Date;
+  leaseStartDate: Date;
+  leaseEndDate: Date;
+  paymentDueDate: number; // Day of the month rent is due
 }
 
-export interface LateFeeDetails {
-  dueDate: Date;
+interface ProrationDetails {
+  leaseDetails: LeaseDetails;
+  moveInDate: Date;
+}
+
+interface LateFeeDetails {
+  leaseDetails: LeaseDetails;
   paymentDate: Date;
-  lateFeeRate: number; // as a percentage
+  lateFeePercentage: number;
 }
 
-export interface LeaseBalance {
-  totalRent: number;
-  paymentsMade: number;
+interface CurrencyFormatOptions {
+  locale: string;
+  currency: string;
 }
 
-export function calculateProratedRent(rentDetails: RentDetails): number {
-  const { monthlyRent, startDate, endDate } = rentDetails;
-  if (monthlyRent <= 0) throw new Error("Monthly rent must be greater than zero.");
-  if (startDate >= endDate) throw new Error("Start date must be before end date.");
+export function calculateProratedRent(details: ProrationDetails): number {
+  const { leaseDetails, moveInDate } = details;
+  const { monthlyRent, leaseStartDate } = leaseDetails;
 
-  const daysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
-  const rentDays = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-  return (monthlyRent / daysInMonth) * rentDays;
+  if (moveInDate < leaseStartDate) {
+    throw new Error("Move-in date cannot be before lease start date.");
+  }
+
+  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
+  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
+  const proratedRent = (monthlyRent / daysInMonth) * daysOccupied;
+
+  return proratedRent;
 }
 
-export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
-  const { dueDate, paymentDate, lateFeeRate } = lateFeeDetails;
-  if (lateFeeRate < 0) throw new Error("Late fee rate must be non-negative.");
-  if (paymentDate <= dueDate) return 0;
+export function calculateLateFee(details: LateFeeDetails): number {
+  const { leaseDetails, paymentDate, lateFeePercentage } = details;
+  const { monthlyRent, paymentDueDate } = leaseDetails;
 
-  const lateDays = (paymentDate.getTime() - dueDate.getTime()) / (1000 * 3600 * 24);
-  return lateDays * lateFeeRate;
+  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
+    throw new Error("Late fee percentage must be between 0 and 100.");
+  }
+
+  const dueDate = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), paymentDueDate);
+  if (paymentDate <= dueDate) {
+    return 0;
+  }
+
+  const lateFee = (monthlyRent * lateFeePercentage) / 100;
+  return lateFee;
 }
 
-export function calculateLeaseBalance(leaseBalance: LeaseBalance): number {
-  const { totalRent, paymentsMade } = leaseBalance;
-  if (totalRent < 0 || paymentsMade < 0) throw new Error("Total rent and payments made must be non-negative.");
-  return totalRent - paymentsMade;
+export function getLeaseBalanceSummary(leaseDetails: LeaseDetails, paymentsMade: number): number {
+  const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+  const totalMonths = (leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + (leaseEndDate.getMonth() - leaseStartDate.getMonth());
+  const totalRent = monthlyRent * totalMonths;
+  const balance = totalRent - paymentsMade;
+
+  return balance;
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  if (amount < 0) throw new Error("Amount must be non-negative.");
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+export function formatCurrency(amount: number, options: CurrencyFormatOptions): string {
+  const { locale, currency } = options;
+
+  if (!locale || !currency) {
+    throw new Error("Locale and currency must be specified for formatting.");
+  }
+
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
