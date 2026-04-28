@@ -7,61 +7,79 @@ interface LeaseDetails {
 }
 
 interface ProrationDetails {
-  startDate: Date;
-  endDate: Date;
+  moveInDate: Date;
+  monthlyRent: number;
 }
 
 interface LateFeeDetails {
   dueDate: Date;
   paymentDate: Date;
+  monthlyRent: number;
   lateFeePercentage: number;
 }
 
-interface LeaseBalanceSummary {
-  totalRentPaid: number;
-  totalRentDue: number;
+interface LeaseBalanceDetails {
+  monthlyRent: number;
+  paymentsMade: number[];
+  totalMonths: number;
 }
 
-export function calculateProratedRent(lease: LeaseDetails, proration: ProrationDetails): number {
-  if (proration.startDate > proration.endDate) {
-    throw new Error("Proration start date must be before end date.");
+export function calculateProratedRent(details: ProrationDetails): number {
+  const { moveInDate, monthlyRent } = details;
+  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
+    throw new Error("Invalid move-in date");
+  }
+  if (monthlyRent <= 0) {
+    throw new Error("Monthly rent must be greater than zero");
   }
 
-  const daysInMonth = new Date(proration.startDate.getFullYear(), proration.startDate.getMonth() + 1, 0).getDate();
-  const proratedDays = (proration.endDate.getTime() - proration.startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
-
-  if (proratedDays < 0 || proratedDays > daysInMonth) {
-    throw new Error("Invalid proration period.");
-  }
-
-  return (lease.monthlyRent / daysInMonth) * proratedDays;
+  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
+  const proratedRent = (monthlyRent / daysInMonth) * (daysInMonth - moveInDate.getDate() + 1);
+  return parseFloat(proratedRent.toFixed(2));
 }
 
 export function calculateLateFee(details: LateFeeDetails): number {
-  if (details.paymentDate <= details.dueDate) {
-    return 0;
+  const { dueDate, paymentDate, monthlyRent, lateFeePercentage } = details;
+  if (!(dueDate instanceof Date) || isNaN(dueDate.getTime())) {
+    throw new Error("Invalid due date");
+  }
+  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
+    throw new Error("Invalid payment date");
+  }
+  if (monthlyRent <= 0) {
+    throw new Error("Monthly rent must be greater than zero");
+  }
+  if (lateFeePercentage < 0) {
+    throw new Error("Late fee percentage must be non-negative");
   }
 
-  const lateDays = (details.paymentDate.getTime() - details.dueDate.getTime()) / (1000 * 60 * 60 * 24);
-  if (lateDays < 0) {
-    throw new Error("Payment date cannot be before the due date.");
-  }
-
-  return (details.lateFeePercentage / 100) * lateDays;
+  const daysLate = Math.max(0, Math.floor((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+  const lateFee = (monthlyRent * lateFeePercentage / 100) * daysLate;
+  return parseFloat(lateFee.toFixed(2));
 }
 
-export function summarizeLeaseBalance(lease: LeaseDetails, summary: LeaseBalanceSummary): number {
-  if (summary.totalRentPaid < 0 || summary.totalRentDue < 0) {
-    throw new Error("Total rent paid and due must be non-negative.");
+export function calculateLeaseBalance(details: LeaseBalanceDetails): number {
+  const { monthlyRent, paymentsMade, totalMonths } = details;
+  if (monthlyRent <= 0) {
+    throw new Error("Monthly rent must be greater than zero");
+  }
+  if (totalMonths <= 0) {
+    throw new Error("Total months must be greater than zero");
   }
 
-  return summary.totalRentDue - summary.totalRentPaid;
+  const totalRent = monthlyRent * totalMonths;
+  const totalPayments = paymentsMade.reduce((sum, payment) => sum + payment, 0);
+  const balance = totalRent - totalPayments;
+  return parseFloat(balance.toFixed(2));
 }
 
-export function formatCurrency(amount: number): string {
-  if (amount < 0) {
-    throw new Error("Amount must be non-negative.");
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  if (isNaN(amount)) {
+    throw new Error("Invalid amount");
   }
 
-  return `$${amount.toFixed(2)}`;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+  }).format(amount);
 }
