@@ -1,59 +1,67 @@
-# NestIQ: Automate Your Property Management
+# NestIQ: Revolutionizing Property Management with AI
 
-NestIQ is a B2B SaaS platform that leverages AI to streamline tenant communication, maintenance requests, and rent collection for real estate property managers.
+NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. Our AI-driven solution enables property managers to efficiently manage up to three times more properties with the same team.
 
-## Problem Solved
+## Problem Statement
 
-Managing a large portfolio of properties can be overwhelming and time-consuming. NestIQ automates repetitive tasks, enabling property managers to efficiently oversee up to 3x more properties with the same team size.
+Managing multiple properties can be overwhelming for property managers, with repetitive tasks consuming valuable time and resources. NestIQ addresses this challenge by automating these operations, allowing property managers to focus on growth and tenant satisfaction.
 
 ## Key Features
 
-- **AI-Powered Communication**: Automate tenant interactions with intelligent responses and notifications.
-- **Maintenance Management**: Simplify and track maintenance requests through a centralized platform.
-- **Automated Rent Collection**: Seamlessly handle rent payments and reminders using Stripe integration.
-- **Tenant Portal**: Provide tenants with a user-friendly interface for all their needs.
-- **Scalable Infrastructure**: Manage a growing portfolio effortlessly with our robust backend.
+- **Automated Tenant Communication**: Streamline tenant interactions with AI-powered messaging.
+- **Maintenance Request Management**: Efficiently handle and track maintenance requests through an intuitive portal.
+- **Seamless Rent Collection**: Simplify rent payments with integrated payment gateways.
+- **Portfolio Integration**: Easily connect and manage your entire property portfolio in one place.
+- **Scalable Operations**: Manage more properties without increasing team size.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **AI**: Natural Language Processing (NLP) for tenant communication
-- **Payments**: Stripe for secure rent transactions
+- **Frontend**: React.js
 - **Database**: PostgreSQL
-- **Hosting**: AWS
+- **AI/ML**: TensorFlow, PyTorch
+- **Payment Processing**: Stripe
+- **Cloud Services**: AWS
 
 ## Getting Started
 
-To set up the NestIQ Tenant Portal backend locally, follow these steps:
+To get started with NestIQ, follow these steps:
 
-1. **Clone the Repository**
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up Virtual Environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+2. **Set Up the Environment**:
+   - Install Python 3.8 or higher.
+   - Create a virtual environment:
+     ```bash
+     python -m venv venv
+     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+     ```
 
-3. **Install Dependencies**
+3. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Run the Application**
+4. **Configure Environment Variables**:
+   - Create a `.env` file in the root directory and configure your database and Stripe API keys.
+
+5. **Run the Application**:
    ```bash
    uvicorn src.main:app --reload
    ```
 
-5. **Access the API Documentation**
-   Open your browser and navigate to `http://127.0.0.1:8000/docs` to explore the API endpoints.
+6. **Access the Application**:
+   - Open your browser and navigate to `http://localhost:8000` to access the NestIQ platform.
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, empowering us to deliver cutting-edge solutions for property management.
+NestIQ is proudly built with [Agentix](https://agentix.com), leveraging cutting-edge AI technology to transform property management.
 
 ---
+
+For more information, visit our [website](https://nestiq.com) or follow us on [LinkedIn](https://linkedin.com/company/nestiq) and [X](https://x.com/nestiq).
 ```
