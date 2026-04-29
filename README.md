@@ -1,29 +1,33 @@
-# NestIQ: Automate Your Property Management
+# NestIQ
 
-NestIQ is a B2B SaaS platform designed to streamline real estate property management through AI-driven automation. By simplifying tenant communication, maintenance requests, and rent collection, NestIQ empowers property managers to efficiently handle more properties with the same team.
+**Automate Property Management with AI**
 
-## Problem Statement
+NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. By integrating AI-driven solutions, NestIQ enables property managers to efficiently manage up to three times more properties with the same team.
 
-Managing multiple properties involves repetitive and time-consuming tasks that can overwhelm property managers. NestIQ addresses this challenge by automating these operations, allowing managers to focus on growth and tenant satisfaction.
+## Problem Solved
+
+Property management involves repetitive and time-consuming tasks that can hinder growth and efficiency. NestIQ addresses these challenges by automating key operations, allowing property managers to focus on scaling their business and enhancing tenant satisfaction.
 
 ## Key Features
 
-- **Automated Tenant Communication**: AI-driven responses to common tenant inquiries.
-- **Streamlined Maintenance Requests**: Efficiently manage and track maintenance tasks.
-- **Seamless Rent Collection**: Integrate with payment systems for automated rent processing.
-- **Scalable Management**: Manage up to 3x more properties without increasing team size.
+- **AI-Powered Tenant Communication**: Automate responses to common tenant inquiries and streamline communication.
+- **Maintenance Request Automation**: Efficiently manage and track maintenance requests with AI-driven prioritization.
+- **Automated Rent Collection**: Simplify rent collection processes using secure payment gateways.
+- **Portfolio Integration**: Seamlessly connect and manage your property portfolio within a single platform.
+- **Scalable Operations**: Manage more properties without increasing team size.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **AI**: Natural Language Processing (NLP) for tenant communication
-- **Payments**: Stripe API
+- **Payments**: Stripe
+- **Authentication**: OAuth2
 - **Database**: PostgreSQL
-- **Hosting**: AWS
+- **AI**: OpenAI GPT
+- **Deployment**: Docker, AWS
 
 ## Getting Started
 
-To set up the NestIQ backend locally, follow these steps:
+To get started with NestIQ, follow these steps:
 
 1. **Clone the Repository**:
    ```bash
@@ -31,11 +35,13 @@ To set up the NestIQ backend locally, follow these steps:
    cd nestiq
    ```
 
-2. **Set Up Virtual Environment**:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+2. **Set Up the Environment**:
+   - Ensure Python 3.8+ is installed.
+   - Create a virtual environment:
+     ```bash
+     python -m venv venv
+     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+     ```
 
 3. **Install Dependencies**:
    ```bash
@@ -43,11 +49,7 @@ To set up the NestIQ backend locally, follow these steps:
    ```
 
 4. **Configure Environment Variables**:
-   Create a `.env` file in the root directory and add your configuration:
-   ```plaintext
-   STRIPE_API_KEY=your_stripe_api_key
-   DATABASE_URL=your_database_url
-   ```
+   - Create a `.env` file and set your Stripe API keys, database URL, and other necessary configurations.
 
 5. **Run the Application**:
    ```bash
@@ -55,8 +57,8 @@ To set up the NestIQ backend locally, follow these steps:
    ```
 
 6. **Access the API**:
-   Visit `http://localhost:8000/docs` to explore the API documentation.
+   - Open your browser and navigate to `http://localhost:8000/docs` to explore the API documentation.
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, leveraging cutting-edge technology to redefine property management.
+NestIQ is proudly built with Agentix, leveraging cutting-edge AI and cloud technologies to deliver exceptional property management solutions.
