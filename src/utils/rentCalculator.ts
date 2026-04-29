@@ -1,62 +1,74 @@
-interface RentProrationInput {
+// src/utils/rentCalculator.ts
+
+interface LeaseDetails {
   monthlyRent: number;
-  daysInMonth: number;
-  daysOccupied: number;
+  leaseStartDate: Date;
+  leaseEndDate: Date;
 }
 
-interface LateFeeCalculationInput {
-  rentDue: number;
-  daysLate: number;
-  dailyLateFeeRate: number;
+interface PaymentDetails {
+  paymentDate: Date;
+  amountPaid: number;
 }
 
-interface LeaseBalanceSummaryInput {
-  totalLeaseAmount: number;
-  paymentsMade: number[];
+interface LateFeePolicy {
+  dailyLateFee: number;
+  gracePeriodDays: number;
 }
 
-interface CurrencyFormatInput {
-  amount: number;
+interface CurrencyFormatOptions {
+  locale: string;
   currency: string;
 }
 
-export function calculateRentProration(input: RentProrationInput): number {
-  const { monthlyRent, daysInMonth, daysOccupied } = input;
+export function calculateProratedRent(leaseDetails: LeaseDetails, moveInDate: Date): number {
+  const { monthlyRent, leaseStartDate } = leaseDetails;
 
-  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error("Invalid input values for rent proration calculation.");
+  if (moveInDate < leaseStartDate) {
+    throw new Error("Move-in date cannot be before lease start date.");
   }
 
+  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
+  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
   return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
-export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { rentDue, daysLate, dailyLateFeeRate } = input;
+export function calculateLateFee(paymentDetails: PaymentDetails, leaseDetails: LeaseDetails, lateFeePolicy: LateFeePolicy): number {
+  const { paymentDate } = paymentDetails;
+  const { leaseStartDate } = leaseDetails;
+  const { dailyLateFee, gracePeriodDays } = lateFeePolicy;
 
-  if (rentDue <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
-    throw new Error("Invalid input values for late fee calculation.");
+  const dueDate = new Date(leaseStartDate);
+  dueDate.setMonth(dueDate.getMonth() + 1);
+  dueDate.setDate(1);
+
+  const gracePeriodEndDate = new Date(dueDate);
+  gracePeriodEndDate.setDate(gracePeriodEndDate.getDate() + gracePeriodDays);
+
+  if (paymentDate <= gracePeriodEndDate) {
+    return 0;
   }
 
-  return rentDue * daysLate * dailyLateFeeRate;
+  const lateDays = Math.floor((paymentDate.getTime() - gracePeriodEndDate.getTime()) / (1000 * 60 * 60 * 24));
+  return lateDays * dailyLateFee;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
-  const { totalLeaseAmount, paymentsMade } = input;
+export function calculateLeaseBalanceSummary(leaseDetails: LeaseDetails, payments: PaymentDetails[]): number {
+  const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+  const totalLeaseMonths = (leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + (leaseEndDate.getMonth() - leaseStartDate.getMonth());
+  const totalRent = totalLeaseMonths * monthlyRent;
 
-  if (totalLeaseAmount <= 0 || paymentsMade.some(payment => payment < 0)) {
-    throw new Error("Invalid input values for lease balance summary.");
-  }
+  const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
 
-  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return totalLeaseAmount - totalPayments;
+  return totalRent - totalPaid;
 }
 
-export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currency } = input;
+export function formatCurrency(amount: number, options: CurrencyFormatOptions): string {
+  const { locale, currency } = options;
 
-  if (amount < 0 || !currency) {
-    throw new Error("Invalid input values for currency formatting.");
+  if (amount < 0) {
+    throw new Error("Amount cannot be negative.");
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
