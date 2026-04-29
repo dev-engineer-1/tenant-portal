@@ -1,59 +1,68 @@
-# NestIQ: AI-Powered Property Management
+# NestIQ
 
-NestIQ is a B2B SaaS platform designed to revolutionize property management by automating tenant communication, maintenance requests, and rent collection using AI. Our solution empowers property managers to efficiently oversee up to 3x more properties with the same team.
+**Automate Property Management with AI**
+
+NestIQ is a B2B SaaS platform designed to empower real estate property managers by automating tenant communication, maintenance requests, and rent collection. By connecting their portfolio to NestIQ, property managers can handle 3x more properties with the same team, allowing them to focus on growth and efficiency.
 
 ## Problem Solved
 
-Property managers often face the challenge of handling repetitive tasks across multiple properties, which can be time-consuming and inefficient. NestIQ addresses this by automating these operations, allowing managers to focus on strategic growth and tenant satisfaction.
+Property managers often face the challenge of managing repetitive tasks across multiple properties, which can be time-consuming and prone to errors. NestIQ streamlines these operations using AI, enabling property managers to optimize their workflow and enhance tenant satisfaction.
 
 ## Key Features
 
-- **Automated Tenant Communication**: Streamline tenant interactions with AI-driven messaging.
-- **Maintenance Request Management**: Simplify the process of logging and tracking maintenance issues.
-- **Seamless Rent Collection**: Integrate with Stripe for hassle-free rent payments.
-- **Portfolio Integration**: Easily connect and manage multiple properties from a single platform.
-- **Scalable Operations**: Manage more properties without increasing team size.
+- **Automated Tenant Communication**: AI-driven responses to common tenant inquiries.
+- **Maintenance Request Management**: Streamlined process for handling and prioritizing maintenance tasks.
+- **Rent Collection Automation**: Seamless integration with payment gateways for efficient rent collection.
+- **Portfolio Analytics**: Insights and analytics to help property managers make informed decisions.
+- **Scalable Infrastructure**: Manage more properties without increasing the size of your team.
 
 ## Tech Stack
 
 - **Backend**: Python, FastAPI
-- **Payments**: Stripe
+- **AI/ML**: TensorFlow, PyTorch
 - **Database**: PostgreSQL
-- **AI**: OpenAI GPT
-- **Deployment**: Docker, AWS
+- **Payments**: Stripe
+- **Authentication**: OAuth 2.0
+- **Deployment**: Docker, Kubernetes
+- **Cloud Provider**: AWS
 
 ## Getting Started
 
-To set up NestIQ locally for development:
+Follow these steps to set up the NestIQ backend for development:
 
-1. **Clone the Repository**:
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up Virtual Environment**:
+2. **Set Up the Virtual Environment**
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    ```
 
-3. **Install Dependencies**:
+3. **Install Dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Run the Application**:
+4. **Configure Environment Variables**
+   - Create a `.env` file in the root directory and add the necessary environment variables for database and Stripe integration.
+
+5. **Run Migrations**
+   ```bash
+   alembic upgrade head
+   ```
+
+6. **Start the Development Server**
    ```bash
    uvicorn src.main:app --reload
    ```
 
-5. **Access the API Documentation**:
-   Open your browser and navigate to `http://127.0.0.1:8000/docs` to explore the API endpoints.
+7. **Access the API Documentation**
+   - Navigate to `http://localhost:8000/docs` to explore the API endpoints.
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, ensuring robust and scalable solutions for modern property management challenges.
-
-For more information, visit our [website](https://nestiq.com) or follow us on [LinkedIn](https://linkedin.com/company/nestiq) and [X](https://x.com/nestiq).
-```
+NestIQ is proudly built with [Agentix](https://www.agentix.com), leveraging cutting-edge technology to simplify property management.
