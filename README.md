@@ -1,55 +1,63 @@
 # NestIQ: Intelligent Clinic Management
 
-NestIQ is a comprehensive solution designed to streamline clinic operations by digitizing patient records, automating appointment reminders, and managing insurance claim submissions. Our platform empowers independent doctors and small clinics to reduce administrative overhead by 60%, allowing healthcare professionals to focus on what matters most—patient care.
+NestIQ is a comprehensive solution designed to streamline clinic operations by digitizing patient records, automating appointment reminders, and managing insurance claim submissions. Built for independent doctors and small clinics, NestIQ integrates seamlessly with existing systems to significantly reduce administrative overhead, allowing healthcare professionals to focus on patient care.
 
-## Problem Statement
+## Problem Solved
 
-In the healthcare industry, independent doctors and small clinics often struggle with managing extensive paperwork, leading to inefficiencies and reduced patient interaction. NestIQ addresses these challenges by providing a seamless, digital solution that integrates with existing systems to enhance operational efficiency.
+Independent doctors and small clinics often struggle with managing extensive paperwork, leading to increased administrative costs and reduced time for patient care. NestIQ addresses this challenge by providing a digital platform that automates routine tasks, enhances operational efficiency, and ensures compliance with healthcare regulations.
 
 ## Key Features
 
-- **Patient Records Management**: Securely digitize and manage patient records with ease.
-- **Automated Appointment Reminders**: Reduce no-shows with automated reminders sent to patients.
-- **Insurance Claims Processing**: Simplify and expedite the submission of insurance claims.
-- **System Integration**: Connect with existing clinic systems for a seamless transition.
-- **Data Security**: Ensure patient data is protected with robust security measures.
+- **Patient Records Management**: Securely digitize and manage patient records with easy CRUD operations.
+- **Automated Appointment Reminders**: Reduce no-shows with automated reminders via SMS and email.
+- **Insurance Claims Handling**: Simplify and expedite the insurance claim submission process.
+- **Seamless Integration**: Connect with existing clinic systems for a smooth transition to digital operations.
+- **Data Security**: Ensure compliance with HIPAA and other healthcare regulations.
 
 ## Tech Stack
 
 - **Backend**: Python
 - **Framework**: FastAPI
 - **Database**: PostgreSQL
-- **Frontend**: React
-- **Deployment**: Docker, AWS
+- **Messaging**: Twilio API for SMS notifications
+- **Deployment**: Docker, Kubernetes
+- **CI/CD**: GitHub Actions
 
 ## Getting Started
 
-To get started with NestIQ, follow these steps:
+To set up NestIQ locally, follow these steps:
 
-1. **Clone the Repository**
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/yourusername/nestiq.git
    cd nestiq
    ```
 
-2. **Set Up the Environment**
-   Ensure you have Python and Docker installed. Create a virtual environment and install dependencies:
+2. **Set Up the Environment**:
+   Ensure you have Python 3.8+ and Docker installed.
+
+3. **Install Dependencies**:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-3. **Run the Application**
-   Use Docker to deploy the application:
+4. **Run the Application**:
+   Use Docker to start the application:
    ```bash
    docker-compose up --build
    ```
 
-4. **Access the Application**
+5. **Access the Application**:
    Open your browser and navigate to `http://localhost:8000` to access the NestIQ dashboard.
+
+6. **Run Tests**:
+   Ensure everything is working by running the test suite:
+   ```bash
+   pytest
+   ```
 
 ## Built with Agentix
 
-NestIQ is proudly built with Agentix, leveraging cutting-edge technology to deliver a robust and efficient clinic management solution.
+NestIQ is proudly built with Agentix, leveraging cutting-edge technology to deliver robust and efficient healthcare solutions.
+
 ```
