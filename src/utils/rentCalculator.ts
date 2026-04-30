@@ -13,46 +13,55 @@ interface LateFeeCalculationInput {
 }
 
 interface LeaseBalanceSummaryInput {
-  monthlyRent: number;
-  monthsRemaining: number;
-  paidToDate: number;
+  totalLeaseAmount: number;
+  amountPaid: number;
 }
 
 interface CurrencyFormatInput {
   amount: number;
-  currency: string;
-  locale: string;
+  currencyCode: string;
 }
 
 export function calculateRentProration(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
-  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0 || daysOccupied > daysInMonth) {
-    throw new Error('Invalid input for rent proration calculation.');
+
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
+    throw new Error('Invalid input values for rent proration calculation.');
   }
+
   return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
   const { monthlyRent, lateFeePercentage, daysLate } = input;
+
   if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
-    throw new Error('Invalid input for late fee calculation.');
+    throw new Error('Invalid input values for late fee calculation.');
   }
+
   return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
-  const { monthlyRent, monthsRemaining, paidToDate } = input;
-  if (monthlyRent <= 0 || monthsRemaining < 0 || paidToDate < 0) {
-    throw new Error('Invalid input for lease balance summary.');
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; isPaidOff: boolean } {
+  const { totalLeaseAmount, amountPaid } = input;
+
+  if (totalLeaseAmount < 0 || amountPaid < 0) {
+    throw new Error('Invalid input values for lease balance summary.');
   }
-  const totalLeaseAmount = monthlyRent * monthsRemaining;
-  return totalLeaseAmount - paidToDate;
+
+  const balance = totalLeaseAmount - amountPaid;
+  return {
+    balance,
+    isPaidOff: balance <= 0
+  };
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currency, locale } = input;
-  if (amount < 0 || !currency || !locale) {
-    throw new Error('Invalid input for currency formatting.');
+  const { amount, currencyCode } = input;
+
+  if (amount < 0 || !currencyCode) {
+    throw new Error('Invalid input values for currency formatting.');
   }
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
