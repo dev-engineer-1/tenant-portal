@@ -1,63 +1,70 @@
+// src/utils/rentCalculator.ts
+
 interface RentProrationInput {
-  totalRent: number;
+  monthlyRent: number;
   daysInMonth: number;
   daysOccupied: number;
 }
 
 interface LateFeeCalculationInput {
-  rentAmount: number;
+  monthlyRent: number;
   lateFeePercentage: number;
+  daysLate: number;
+  gracePeriod: number;
 }
 
 interface LeaseBalanceSummaryInput {
-  totalRent: number;
+  totalLeaseAmount: number;
   paymentsMade: number[];
 }
 
 interface CurrencyFormatInput {
   amount: number;
-  currencyCode: string;
+  currency: string;
+  locale: string;
 }
 
-export function calculateRentProration(input: RentProrationInput): number {
-  const { totalRent, daysInMonth, daysOccupied } = input;
+export function calculateProratedRent(input: RentProrationInput): number {
+  const { monthlyRent, daysInMonth, daysOccupied } = input;
 
-  if (totalRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error('Invalid input values for rent proration calculation.');
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
+    throw new Error('Invalid input values for rent proration.');
   }
 
-  return (totalRent / daysInMonth) * daysOccupied;
+  return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { rentAmount, lateFeePercentage } = input;
+  const { monthlyRent, lateFeePercentage, daysLate, gracePeriod } = input;
 
-  if (rentAmount <= 0 || lateFeePercentage < 0) {
+  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0 || gracePeriod < 0) {
     throw new Error('Invalid input values for late fee calculation.');
   }
 
-  return rentAmount * (lateFeePercentage / 100);
+  if (daysLate <= gracePeriod) {
+    return 0;
+  }
+
+  return (monthlyRent * (lateFeePercentage / 100)) * (daysLate - gracePeriod);
 }
 
-export function generateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): string {
-  const { totalRent, paymentsMade } = input;
+export function calculateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
+  const { totalLeaseAmount, paymentsMade } = input;
 
-  if (totalRent <= 0 || paymentsMade.some(payment => payment < 0)) {
+  if (totalLeaseAmount <= 0 || paymentsMade.some(payment => payment < 0)) {
     throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const totalPayments = paymentsMade.reduce((sum, payment) => sum + payment, 0);
-  const balance = totalRent - totalPayments;
-
-  return `Total Rent: ${totalRent}, Total Payments: ${totalPayments}, Balance: ${balance}`;
+  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPayments;
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currencyCode } = input;
+  const { amount, currency, locale } = input;
 
-  if (amount < 0 || !currencyCode) {
+  if (amount < 0 || !currency || !locale) {
     throw new Error('Invalid input values for currency formatting.');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
