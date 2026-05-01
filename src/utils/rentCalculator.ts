@@ -7,7 +7,7 @@ interface RentProrationInput {
 }
 
 interface LateFeeCalculationInput {
-  rentDue: number;
+  monthlyRent: number;
   daysLate: number;
   dailyLateFeeRate: number;
 }
@@ -33,26 +33,27 @@ export function calculateProratedRent(input: RentProrationInput): number {
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { rentDue, daysLate, dailyLateFeeRate } = input;
+  const { monthlyRent, daysLate, dailyLateFeeRate } = input;
 
-  if (rentDue <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
+  if (monthlyRent <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
     throw new Error('Invalid input values for late fee calculation.');
   }
 
-  return rentDue * dailyLateFeeRate * daysLate;
+  return monthlyRent * (dailyLateFeeRate / 100) * daysLate;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; status: string } {
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balanceDue: number; isPaidInFull: boolean } {
   const { totalLeaseAmount, amountPaid } = input;
 
   if (totalLeaseAmount < 0 || amountPaid < 0) {
     throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const balance = totalLeaseAmount - amountPaid;
-  const status = balance > 0 ? 'Outstanding' : 'Paid in Full';
-
-  return { balance, status };
+  const balanceDue = totalLeaseAmount - amountPaid;
+  return {
+    balanceDue,
+    isPaidInFull: balanceDue <= 0,
+  };
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
