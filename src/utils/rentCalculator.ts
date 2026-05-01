@@ -10,6 +10,7 @@ interface LateFeeCalculationInput {
   monthlyRent: number;
   lateFeePercentage: number;
   daysLate: number;
+  gracePeriod: number;
 }
 
 interface LeaseBalanceSummaryInput {
@@ -18,14 +19,14 @@ interface LeaseBalanceSummaryInput {
   paidToDate: number;
 }
 
-interface CurrencyFormatOptions {
-  locale?: string;
-  currency?: string;
+interface CurrencyFormattingInput {
+  amount: number;
+  currencyCode: string;
 }
 
-export function calculateProratedRent(input: RentProrationInput): number {
+export function calculateRentProration(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
-  
+
   if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
     throw new Error('Invalid input values for rent proration.');
   }
@@ -34,14 +35,17 @@ export function calculateProratedRent(input: RentProrationInput): number {
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { monthlyRent, lateFeePercentage, daysLate } = input;
+  const { monthlyRent, lateFeePercentage, daysLate, gracePeriod } = input;
 
-  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
+  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0 || gracePeriod < 0) {
     throw new Error('Invalid input values for late fee calculation.');
   }
 
-  const lateFee = (monthlyRent * (lateFeePercentage / 100)) * daysLate;
-  return lateFee;
+  if (daysLate <= gracePeriod) {
+    return 0;
+  }
+
+  return (monthlyRent * (lateFeePercentage / 100)) * (daysLate - gracePeriod);
 }
 
 export function calculateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
@@ -55,12 +59,12 @@ export function calculateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): n
   return totalLeaseCost - paidToDate;
 }
 
-export function formatCurrency(amount: number, options: CurrencyFormatOptions = {}): string {
-  const { locale = 'en-US', currency = 'USD' } = options;
+export function formatCurrency(input: CurrencyFormattingInput): string {
+  const { amount, currencyCode } = input;
 
-  if (amount < 0) {
-    throw new Error('Amount cannot be negative for currency formatting.');
+  if (amount < 0 || !currencyCode) {
+    throw new Error('Invalid input values for currency formatting.');
   }
 
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
