@@ -12,50 +12,48 @@ interface ProrationDetails {
 }
 
 interface LateFeeDetails {
-  rentDueDate: Date;
-  paymentDate: Date;
-  lateFeePercentage: number;
+  baseLateFee: number;
+  dailyLateFee: number;
+  daysLate: number;
 }
 
 interface LeaseBalanceSummary {
-  totalRent: number;
-  totalPaid: number;
+  totalRentPaid: number;
+  totalRentDue: number;
+  balance: number;
 }
 
 export function calculateProratedRent(leaseDetails: LeaseDetails, prorationDetails: ProrationDetails): number {
-  if (prorationDetails.dailyRent <= 0 || prorationDetails.daysOccupied < 0) {
-    throw new Error('Invalid proration details');
+  if (prorationDetails.daysOccupied < 0) {
+    throw new Error("Days occupied cannot be negative.");
   }
-
-  const proratedRent = prorationDetails.dailyRent * prorationDetails.daysOccupied;
-  return proratedRent;
+  const { monthlyRent } = leaseDetails;
+  const { dailyRent, daysOccupied } = prorationDetails;
+  return dailyRent * daysOccupied;
 }
 
 export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
-  const { rentDueDate, paymentDate, lateFeePercentage } = lateFeeDetails;
-  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
-    throw new Error('Invalid late fee percentage');
+  if (lateFeeDetails.daysLate < 0) {
+    throw new Error("Days late cannot be negative.");
   }
-
-  const daysLate = Math.max(0, Math.floor((paymentDate.getTime() - rentDueDate.getTime()) / (1000 * 60 * 60 * 24)));
-  const lateFee = daysLate > 0 ? (lateFeePercentage / 100) * daysLate : 0;
-  return lateFee;
+  const { baseLateFee, dailyLateFee, daysLate } = lateFeeDetails;
+  return baseLateFee + (dailyLateFee * daysLate);
 }
 
-export function getLeaseBalanceSummary(leaseBalanceSummary: LeaseBalanceSummary): string {
-  const { totalRent, totalPaid } = leaseBalanceSummary;
-  if (totalRent < 0 || totalPaid < 0) {
-    throw new Error('Invalid lease balance summary details');
+export function generateLeaseBalanceSummary(leaseDetails: LeaseDetails, totalRentPaid: number): LeaseBalanceSummary {
+  if (totalRentPaid < 0) {
+    throw new Error("Total rent paid cannot be negative.");
   }
-
-  const balance = totalRent - totalPaid;
-  return formatCurrency(balance);
+  const totalLeaseDurationMonths = (leaseDetails.leaseEndDate.getFullYear() - leaseDetails.leaseStartDate.getFullYear()) * 12 +
+    (leaseDetails.leaseEndDate.getMonth() - leaseDetails.leaseStartDate.getMonth());
+  const totalRentDue = leaseDetails.monthlyRent * totalLeaseDurationMonths;
+  const balance = totalRentDue - totalRentPaid;
+  return { totalRentPaid, totalRentDue, balance };
 }
 
-export function formatCurrency(amount: number): string {
-  if (isNaN(amount)) {
-    throw new Error('Invalid amount');
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  if (amount < 0) {
+    throw new Error("Amount cannot be negative.");
   }
-
-  return `$${amount.toFixed(2)}`;
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
