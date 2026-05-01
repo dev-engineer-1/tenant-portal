@@ -1,71 +1,67 @@
-interface LeaseDetails {
+// src/utils/rentCalculator.ts
+
+interface RentProrationInput {
   monthlyRent: number;
-  leaseStartDate: Date;
-  leaseEndDate: Date;
-  paymentDueDate: number; // Day of the month
+  daysInMonth: number;
+  daysOccupied: number;
 }
 
-interface ProrationDetails {
-  leaseDetails: LeaseDetails;
-  moveInDate: Date;
+interface LateFeeCalculationInput {
+  rentDue: number;
+  daysLate: number;
+  dailyLateFeeRate: number;
 }
 
-interface LateFeeDetails {
-  leaseDetails: LeaseDetails;
-  paymentDate: Date;
-  lateFeePercentage: number;
+interface LeaseBalanceSummaryInput {
+  totalLeaseAmount: number;
+  amountPaid: number;
 }
 
-interface LeaseBalanceSummary {
-  leaseDetails: LeaseDetails;
-  paymentsMade: number[];
+interface CurrencyFormatInput {
+  amount: number;
+  currencyCode: string;
 }
 
-export function calculateProratedRent(details: ProrationDetails): number {
-  const { leaseDetails, moveInDate } = details;
-  const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+export function calculateRentProration(input: RentProrationInput): number {
+  const { monthlyRent, daysInMonth, daysOccupied } = input;
 
-  if (moveInDate < leaseStartDate || moveInDate > leaseEndDate) {
-    throw new Error('Move-in date must be within the lease period.');
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
+    throw new Error('Invalid input values for rent proration calculation.');
   }
 
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
   return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
-export function calculateLateFee(details: LateFeeDetails): number {
-  const { leaseDetails, paymentDate, lateFeePercentage } = details;
-  const { monthlyRent, paymentDueDate } = leaseDetails;
+export function calculateLateFee(input: LateFeeCalculationInput): number {
+  const { rentDue, daysLate, dailyLateFeeRate } = input;
 
-  if (lateFeePercentage < 0 || lateFeePercentage > 100) {
-    throw new Error('Late fee percentage must be between 0 and 100.');
+  if (rentDue <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
+    throw new Error('Invalid input values for late fee calculation.');
   }
 
-  const dueDate = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), paymentDueDate);
-  if (paymentDate <= dueDate) {
-    return 0;
-  }
-
-  const lateDays = Math.ceil((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-  return (monthlyRent * (lateFeePercentage / 100)) * lateDays;
+  return rentDue * daysLate * dailyLateFeeRate;
 }
 
-export function summarizeLeaseBalance(details: LeaseBalanceSummary): number {
-  const { leaseDetails, paymentsMade } = details;
-  const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number, isPaidOff: boolean } {
+  const { totalLeaseAmount, amountPaid } = input;
 
-  const totalLeaseMonths = (leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + (leaseEndDate.getMonth() - leaseStartDate.getMonth()) + 1;
-  const totalRent = monthlyRent * totalLeaseMonths;
-  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-
-  return totalRent - totalPayments;
-}
-
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  if (amount < 0) {
-    throw new Error('Amount cannot be negative.');
+  if (totalLeaseAmount < 0 || amountPaid < 0) {
+    throw new Error('Invalid input values for lease balance summary.');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  const balance = totalLeaseAmount - amountPaid;
+  return {
+    balance,
+    isPaidOff: balance <= 0
+  };
+}
+
+export function formatCurrency(input: CurrencyFormatInput): string {
+  const { amount, currencyCode } = input;
+
+  if (amount < 0 || !currencyCode) {
+    throw new Error('Invalid input values for currency formatting.');
+  }
+
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
