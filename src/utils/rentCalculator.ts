@@ -14,7 +14,7 @@ interface LateFeeCalculationInput {
 
 interface LeaseBalanceSummaryInput {
   totalLeaseAmount: number;
-  amountPaid: number;
+  paymentsMade: number[];
 }
 
 interface CurrencyFormatInput {
@@ -26,7 +26,7 @@ export function calculateProratedRent(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
 
   if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error('Invalid input for rent proration calculation.');
+    throw new Error('Invalid input values for rent proration.');
   }
 
   return (monthlyRent / daysInMonth) * daysOccupied;
@@ -36,35 +36,32 @@ export function calculateLateFee(input: LateFeeCalculationInput): number {
   const { monthlyRent, lateFeePercentage, daysLate } = input;
 
   if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
-    throw new Error('Invalid input for late fee calculation.');
+    throw new Error('Invalid input values for late fee calculation.');
   }
 
   return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balanceDue: number, isPaidInFull: boolean } {
-  const { totalLeaseAmount, amountPaid } = input;
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
+  const { totalLeaseAmount, paymentsMade } = input;
 
-  if (totalLeaseAmount < 0 || amountPaid < 0) {
-    throw new Error('Invalid input for lease balance summary.');
+  if (totalLeaseAmount <= 0 || paymentsMade.some(payment => payment < 0)) {
+    throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const balanceDue = totalLeaseAmount - amountPaid;
-  return {
-    balanceDue,
-    isPaidInFull: balanceDue <= 0
-  };
+  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPayments;
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
   const { amount, currencyCode } = input;
 
   if (amount < 0 || !currencyCode) {
-    throw new Error('Invalid input for currency formatting.');
+    throw new Error('Invalid input values for currency formatting.');
   }
 
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currencyCode
+    currency: currencyCode,
   }).format(amount);
 }
