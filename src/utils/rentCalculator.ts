@@ -2,19 +2,17 @@ interface LeaseDetails {
   monthlyRent: number;
   leaseStartDate: Date;
   leaseEndDate: Date;
-  paymentDueDate: number; // Day of the month
 }
 
 interface ProrationDetails {
-  moveInDate: Date;
-  monthlyRent: number;
+  dailyRent: number;
+  daysOccupied: number;
 }
 
 interface LateFeeDetails {
+  rentDueDate: Date;
   paymentDate: Date;
-  dueDate: Date;
-  monthlyRent: number;
-  lateFeePercentage: number;
+  lateFeeRate: number; // as a percentage
 }
 
 interface LeaseBalanceSummary {
@@ -22,55 +20,53 @@ interface LeaseBalanceSummary {
   totalRentDue: number;
 }
 
-export function calculateProratedRent(details: ProrationDetails): number {
-  const { moveInDate, monthlyRent } = details;
-  if (!(moveInDate instanceof Date) || isNaN(moveInDate.getTime())) {
-    throw new Error('Invalid move-in date');
-  }
-  if (monthlyRent <= 0) {
-    throw new Error('Monthly rent must be greater than zero');
+export function calculateProratedRent(leaseDetails: LeaseDetails, prorationDetails: ProrationDetails): number {
+  const { monthlyRent } = leaseDetails;
+  const { dailyRent, daysOccupied } = prorationDetails;
+
+  if (monthlyRent <= 0 || dailyRent <= 0 || daysOccupied < 0) {
+    throw new Error('Invalid input values for rent calculation.');
   }
 
-  const daysInMonth = new Date(moveInDate.getFullYear(), moveInDate.getMonth() + 1, 0).getDate();
-  const daysOccupied = daysInMonth - moveInDate.getDate() + 1;
-  return (monthlyRent / daysInMonth) * daysOccupied;
+  return dailyRent * daysOccupied;
 }
 
-export function calculateLateFee(details: LateFeeDetails): number {
-  const { paymentDate, dueDate, monthlyRent, lateFeePercentage } = details;
-  if (!(paymentDate instanceof Date) || isNaN(paymentDate.getTime())) {
-    throw new Error('Invalid payment date');
-  }
-  if (dueDate < 1 || dueDate > 31) {
-    throw new Error('Invalid due date');
-  }
-  if (monthlyRent <= 0) {
-    throw new Error('Monthly rent must be greater than zero');
-  }
-  if (lateFeePercentage < 0) {
-    throw new Error('Late fee percentage must be non-negative');
+export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
+  const { rentDueDate, paymentDate, lateFeeRate } = lateFeeDetails;
+
+  if (lateFeeRate < 0 || lateFeeRate > 100) {
+    throw new Error('Late fee rate must be between 0 and 100.');
   }
 
-  const dueDateTime = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), dueDate).getTime();
-  if (paymentDate.getTime() > dueDateTime) {
-    return (monthlyRent * lateFeePercentage) / 100;
+  const daysLate = Math.ceil((paymentDate.getTime() - rentDueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysLate <= 0) {
+    return 0;
   }
-  return 0;
+
+  return (lateFeeRate / 100) * daysLate;
 }
 
-export function getLeaseBalanceSummary(details: LeaseBalanceSummary): string {
-  const { totalRentPaid, totalRentDue } = details;
-  if (totalRentPaid < 0 || totalRentDue < 0) {
-    throw new Error('Rent amounts must be non-negative');
+export function generateLeaseBalanceSummary(leaseDetails: LeaseDetails, payments: number[]): LeaseBalanceSummary {
+  const { monthlyRent, leaseStartDate, leaseEndDate } = leaseDetails;
+
+  if (monthlyRent <= 0 || leaseStartDate >= leaseEndDate) {
+    throw new Error('Invalid lease details.');
   }
 
-  const balance = totalRentDue - totalRentPaid;
-  return balance > 0 ? `Balance due: ${formatCurrency(balance)}` : `Overpaid: ${formatCurrency(-balance)}`;
+  const totalRentDue = monthlyRent * ((leaseEndDate.getFullYear() - leaseStartDate.getFullYear()) * 12 + leaseEndDate.getMonth() - leaseStartDate.getMonth());
+  const totalRentPaid = payments.reduce((acc, payment) => acc + payment, 0);
+
+  return {
+    totalRentPaid,
+    totalRentDue,
+  };
 }
 
-export function formatCurrency(amount: number): string {
-  if (typeof amount !== 'number' || isNaN(amount)) {
-    throw new Error('Invalid amount');
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  if (amount < 0) {
+    throw new Error('Amount cannot be negative.');
   }
-  return `$${amount.toFixed(2)}`;
+
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
