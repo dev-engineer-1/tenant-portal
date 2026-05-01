@@ -13,20 +13,22 @@ interface LateFeeCalculationInput {
 }
 
 interface LeaseBalanceSummaryInput {
-  totalLeaseAmount: number;
-  paymentsMade: number[];
+  monthlyRent: number;
+  monthsRemaining: number;
+  paidToDate: number;
 }
 
 interface CurrencyFormatInput {
   amount: number;
-  currencyCode: string;
+  currency: string;
+  locale: string;
 }
 
-export function calculateRentProration(input: RentProrationInput): number {
+export function calculateProratedRent(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
 
   if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error('Invalid input values for rent proration calculation.');
+    throw new Error('Invalid input values for rent proration.');
   }
 
   const dailyRent = monthlyRent / daysInMonth;
@@ -44,23 +46,23 @@ export function calculateLateFee(input: LateFeeCalculationInput): number {
   return lateFee;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
-  const { totalLeaseAmount, paymentsMade } = input;
+export function calculateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
+  const { monthlyRent, monthsRemaining, paidToDate } = input;
 
-  if (totalLeaseAmount < 0 || paymentsMade.some(payment => payment < 0)) {
+  if (monthlyRent <= 0 || monthsRemaining < 0 || paidToDate < 0) {
     throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const totalPaymentsMade = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return totalLeaseAmount - totalPaymentsMade;
+  const totalLeaseCost = monthlyRent * monthsRemaining;
+  return totalLeaseCost - paidToDate;
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currencyCode } = input;
+  const { amount, currency, locale } = input;
 
-  if (amount < 0 || !currencyCode) {
+  if (amount < 0 || !currency || !locale) {
     throw new Error('Invalid input values for currency formatting.');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
