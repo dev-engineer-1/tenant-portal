@@ -1,5 +1,3 @@
-// src/utils/rentCalculator.ts
-
 interface LeaseDetails {
   monthlyRent: number;
   leaseStartDate: Date;
@@ -12,85 +10,44 @@ interface ProrationDetails {
 }
 
 interface LateFeeDetails {
-  monthlyRent: number;
+  rentDueDate: Date;
+  paymentDate: Date;
   lateFeePercentage: number;
-  daysLate: number;
 }
 
-interface BalanceSummary {
-  totalRentPaid: number;
-  totalRentDue: number;
+interface LeaseBalanceSummary {
+  totalRent: number;
+  paymentsMade: number;
 }
 
-export function calculateProratedRent(leaseDetails: LeaseDetails, prorationDetails: ProrationDetails): number {
-  validateLeaseDetails(leaseDetails);
-  validateProrationDetails(prorationDetails);
-
-  const { dailyRent, daysOccupied } = prorationDetails;
-  return dailyRent * daysOccupied;
+export function calculateProratedRent(lease: LeaseDetails, proration: ProrationDetails): number {
+  if (proration.dailyRent <= 0 || proration.daysOccupied < 0) {
+    throw new Error('Invalid proration details');
+  }
+  return proration.dailyRent * proration.daysOccupied;
 }
 
-export function calculateLateFee(lateFeeDetails: LateFeeDetails): number {
-  validateLateFeeDetails(lateFeeDetails);
-
-  const { monthlyRent, lateFeePercentage, daysLate } = lateFeeDetails;
+export function calculateLateFee(details: LateFeeDetails, monthlyRent: number): number {
+  if (monthlyRent <= 0 || details.lateFeePercentage < 0) {
+    throw new Error('Invalid late fee details');
+  }
+  const daysLate = Math.floor((details.paymentDate.getTime() - details.rentDueDate.getTime()) / (1000 * 60 * 60 * 24));
   if (daysLate <= 0) {
     return 0;
   }
-  return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
+  return (monthlyRent * details.lateFeePercentage) / 100;
 }
 
-export function generateLeaseBalanceSummary(leaseDetails: LeaseDetails, balanceSummary: BalanceSummary): string {
-  validateLeaseDetails(leaseDetails);
-  validateBalanceSummary(balanceSummary);
-
-  const { totalRentPaid, totalRentDue } = balanceSummary;
-  const balance = totalRentDue - totalRentPaid;
-  return `Lease Balance Summary: Total Rent Paid: ${formatCurrency(totalRentPaid)}, Total Rent Due: ${formatCurrency(totalRentDue)}, Balance: ${formatCurrency(balance)}`;
+export function calculateLeaseBalance(summary: LeaseBalanceSummary): number {
+  if (summary.totalRent < 0 || summary.paymentsMade < 0) {
+    throw new Error('Invalid lease balance summary');
+  }
+  return summary.totalRent - summary.paymentsMade;
 }
 
-export function formatCurrency(amount: number): string {
-  if (typeof amount !== 'number' || isNaN(amount)) {
-    throw new Error('Invalid amount for currency formatting.');
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  if (amount < 0) {
+    throw new Error('Amount cannot be negative');
   }
-  return `$${amount.toFixed(2)}`;
-}
-
-function validateLeaseDetails(leaseDetails: LeaseDetails): void {
-  if (!leaseDetails || typeof leaseDetails.monthlyRent !== 'number' || isNaN(leaseDetails.monthlyRent)) {
-    throw new Error('Invalid lease details.');
-  }
-  if (!(leaseDetails.leaseStartDate instanceof Date) || !(leaseDetails.leaseEndDate instanceof Date)) {
-    throw new Error('Invalid lease start or end date.');
-  }
-}
-
-function validateProrationDetails(prorationDetails: ProrationDetails): void {
-  if (!prorationDetails || typeof prorationDetails.dailyRent !== 'number' || isNaN(prorationDetails.dailyRent)) {
-    throw new Error('Invalid proration details.');
-  }
-  if (typeof prorationDetails.daysOccupied !== 'number' || isNaN(prorationDetails.daysOccupied)) {
-    throw new Error('Invalid number of days occupied.');
-  }
-}
-
-function validateLateFeeDetails(lateFeeDetails: LateFeeDetails): void {
-  if (!lateFeeDetails || typeof lateFeeDetails.monthlyRent !== 'number' || isNaN(lateFeeDetails.monthlyRent)) {
-    throw new Error('Invalid late fee details.');
-  }
-  if (typeof lateFeeDetails.lateFeePercentage !== 'number' || isNaN(lateFeeDetails.lateFeePercentage)) {
-    throw new Error('Invalid late fee percentage.');
-  }
-  if (typeof lateFeeDetails.daysLate !== 'number' || isNaN(lateFeeDetails.daysLate)) {
-    throw new Error('Invalid number of days late.');
-  }
-}
-
-function validateBalanceSummary(balanceSummary: BalanceSummary): void {
-  if (!balanceSummary || typeof balanceSummary.totalRentPaid !== 'number' || isNaN(balanceSummary.totalRentPaid)) {
-    throw new Error('Invalid balance summary.');
-  }
-  if (typeof balanceSummary.totalRentDue !== 'number' || isNaN(balanceSummary.totalRentDue)) {
-    throw new Error('Invalid total rent due.');
-  }
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
