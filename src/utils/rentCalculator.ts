@@ -1,5 +1,3 @@
-// src/utils/rentCalculator.ts
-
 interface RentProrationInput {
   monthlyRent: number;
   daysInMonth: number;
@@ -14,7 +12,7 @@ interface LateFeeCalculationInput {
 
 interface LeaseBalanceSummaryInput {
   totalLeaseAmount: number;
-  paymentsMade: number[];
+  amountPaid: number;
 }
 
 interface CurrencyFormatInput {
@@ -22,7 +20,7 @@ interface CurrencyFormatInput {
   currencyCode: string;
 }
 
-export function calculateProratedRent(input: RentProrationInput): number {
+export function calculateRentProration(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
 
   if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
@@ -39,19 +37,18 @@ export function calculateLateFee(input: LateFeeCalculationInput): number {
     throw new Error('Invalid input values for late fee calculation.');
   }
 
-  const dailyLateFee = (monthlyRent * (lateFeePercentage / 100)) / 30;
-  return dailyLateFee * daysLate;
+  return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
-  const { totalLeaseAmount, paymentsMade } = input;
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): string {
+  const { totalLeaseAmount, amountPaid } = input;
 
-  if (totalLeaseAmount <= 0 || paymentsMade.some(payment => payment < 0)) {
+  if (totalLeaseAmount < 0 || amountPaid < 0) {
     throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const totalPaymentsMade = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return totalLeaseAmount - totalPaymentsMade;
+  const balance = totalLeaseAmount - amountPaid;
+  return `Total Lease Amount: ${totalLeaseAmount}, Amount Paid: ${amountPaid}, Balance: ${balance}`;
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
@@ -61,8 +58,5 @@ export function formatCurrency(input: CurrencyFormatInput): string {
     throw new Error('Invalid input values for currency formatting.');
   }
 
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyCode,
-  }).format(amount);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
