@@ -8,9 +8,8 @@ interface RentProrationInput {
 
 interface LateFeeCalculationInput {
   monthlyRent: number;
-  lateFeePercentage: number;
   daysLate: number;
-  gracePeriod: number;
+  dailyLateFeeRate: number;
 }
 
 interface LeaseBalanceSummaryInput {
@@ -18,7 +17,7 @@ interface LeaseBalanceSummaryInput {
   paymentsMade: number[];
 }
 
-interface CurrencyFormattingInput {
+interface CurrencyFormatInput {
   amount: number;
   currencyCode: string;
 }
@@ -30,42 +29,40 @@ export function calculateRentProration(input: RentProrationInput): number {
     throw new Error('Invalid input for rent proration calculation.');
   }
 
-  return (monthlyRent / daysInMonth) * daysOccupied;
+  const dailyRent = monthlyRent / daysInMonth;
+  return dailyRent * daysOccupied;
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { monthlyRent, lateFeePercentage, daysLate, gracePeriod } = input;
+  const { monthlyRent, daysLate, dailyLateFeeRate } = input;
 
-  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0 || gracePeriod < 0) {
+  if (monthlyRent <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
     throw new Error('Invalid input for late fee calculation.');
   }
 
-  if (daysLate <= gracePeriod) {
-    return 0;
-  }
-
-  return (monthlyRent * (lateFeePercentage / 100));
+  return monthlyRent * dailyLateFeeRate * daysLate;
 }
 
-export function generateLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; totalPaid: number } {
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
   const { totalLeaseAmount, paymentsMade } = input;
 
-  if (totalLeaseAmount < 0 || paymentsMade.some(payment => payment < 0)) {
+  if (totalLeaseAmount <= 0 || paymentsMade.some(payment => payment < 0)) {
     throw new Error('Invalid input for lease balance summary.');
   }
 
-  const totalPaid = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  const balance = totalLeaseAmount - totalPaid;
-
-  return { balance, totalPaid };
+  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPayments;
 }
 
-export function formatCurrency(input: CurrencyFormattingInput): string {
+export function formatCurrency(input: CurrencyFormatInput): string {
   const { amount, currencyCode } = input;
 
   if (amount < 0 || !currencyCode) {
     throw new Error('Invalid input for currency formatting.');
   }
 
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(amount);
 }
