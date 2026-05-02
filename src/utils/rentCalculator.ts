@@ -1,3 +1,5 @@
+// src/utils/rentCalculator.ts
+
 interface RentProrationInput {
   monthlyRent: number;
   daysInMonth: number;
@@ -15,52 +17,53 @@ interface LeaseBalanceSummaryInput {
   paymentsMade: number[];
 }
 
-interface CurrencyFormatInput {
+interface CurrencyFormattingInput {
   amount: number;
-  currency: string;
+  currencyCode: string;
 }
 
 export function calculateRentProration(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
 
   if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error("Invalid input values for rent proration calculation.");
+    throw new Error('Invalid input values for rent proration.');
   }
 
-  return (monthlyRent / daysInMonth) * daysOccupied;
+  const dailyRent = monthlyRent / daysInMonth;
+  return dailyRent * daysOccupied;
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
   const { monthlyRent, lateFeePercentage, daysLate } = input;
 
   if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
-    throw new Error("Invalid input values for late fee calculation.");
+    throw new Error('Invalid input values for late fee calculation.');
   }
 
-  const dailyLateFeeRate = (lateFeePercentage / 100) / 30;
-  return monthlyRent * dailyLateFeeRate * daysLate;
+  const lateFee = (monthlyRent * (lateFeePercentage / 100)) * daysLate;
+  return lateFee;
 }
 
 export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
   const { totalLeaseAmount, paymentsMade } = input;
 
   if (totalLeaseAmount < 0 || paymentsMade.some(payment => payment < 0)) {
-    throw new Error("Invalid input values for lease balance summary.");
+    throw new Error('Invalid input values for lease balance summary.');
   }
 
-  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
-  return totalLeaseAmount - totalPayments;
+  const totalPaymentsMade = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPaymentsMade;
 }
 
-export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currency } = input;
+export function formatCurrency(input: CurrencyFormattingInput): string {
+  const { amount, currencyCode } = input;
 
-  if (amount < 0 || !currency) {
-    throw new Error("Invalid input values for currency formatting.");
+  if (amount < 0 || !currencyCode) {
+    throw new Error('Invalid input values for currency formatting.');
   }
 
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency,
+    currency: currencyCode,
   }).format(amount);
 }
