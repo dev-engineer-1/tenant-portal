@@ -7,61 +7,58 @@ interface RentProrationInput {
 }
 
 interface LateFeeCalculationInput {
-  rentDue: number;
+  monthlyRent: number;
+  lateFeePercentage: number;
   daysLate: number;
-  dailyLateFeeRate: number;
 }
 
 interface LeaseBalanceSummaryInput {
   totalLeaseAmount: number;
-  amountPaid: number;
+  paymentsMade: number[];
 }
 
 interface CurrencyFormatInput {
   amount: number;
   currencyCode: string;
-  locale: string;
 }
 
 export function calculateRentProration(input: RentProrationInput): number {
   const { monthlyRent, daysInMonth, daysOccupied } = input;
-
-  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0) {
-    throw new Error('Invalid input values for rent proration calculation.');
+  
+  if (monthlyRent <= 0 || daysInMonth <= 0 || daysOccupied < 0 || daysOccupied > daysInMonth) {
+    throw new Error('Invalid input for rent proration calculation.');
   }
 
   return (monthlyRent / daysInMonth) * daysOccupied;
 }
 
 export function calculateLateFee(input: LateFeeCalculationInput): number {
-  const { rentDue, daysLate, dailyLateFeeRate } = input;
-
-  if (rentDue <= 0 || daysLate < 0 || dailyLateFeeRate < 0) {
-    throw new Error('Invalid input values for late fee calculation.');
+  const { monthlyRent, lateFeePercentage, daysLate } = input;
+  
+  if (monthlyRent <= 0 || lateFeePercentage < 0 || daysLate < 0) {
+    throw new Error('Invalid input for late fee calculation.');
   }
 
-  return rentDue * dailyLateFeeRate * daysLate;
+  return (monthlyRent * (lateFeePercentage / 100)) * daysLate;
 }
 
-export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): { balance: number; status: string } {
-  const { totalLeaseAmount, amountPaid } = input;
-
-  if (totalLeaseAmount < 0 || amountPaid < 0) {
-    throw new Error('Invalid input values for lease balance summary.');
+export function getLeaseBalanceSummary(input: LeaseBalanceSummaryInput): number {
+  const { totalLeaseAmount, paymentsMade } = input;
+  
+  if (totalLeaseAmount <= 0 || !Array.isArray(paymentsMade) || paymentsMade.some(payment => payment < 0)) {
+    throw new Error('Invalid input for lease balance summary.');
   }
 
-  const balance = totalLeaseAmount - amountPaid;
-  const status = balance > 0 ? 'Outstanding' : 'Paid';
-
-  return { balance, status };
+  const totalPayments = paymentsMade.reduce((acc, payment) => acc + payment, 0);
+  return totalLeaseAmount - totalPayments;
 }
 
 export function formatCurrency(input: CurrencyFormatInput): string {
-  const { amount, currencyCode, locale } = input;
-
-  if (amount < 0 || !currencyCode || !locale) {
-    throw new Error('Invalid input values for currency formatting.');
+  const { amount, currencyCode } = input;
+  
+  if (amount < 0 || !currencyCode) {
+    throw new Error('Invalid input for currency formatting.');
   }
 
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode }).format(amount);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
 }
